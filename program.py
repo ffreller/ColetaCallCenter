@@ -1,13 +1,13 @@
-# from create_excel import create_excel_file, gather_info_for_worksheets
+from create_excel import create_excel_file, gather_info_for_worksheets
 from preprocess import preprocess_base, preprocess_orientacao, preprocess_atestado_receita
 from dbcomms import retrieve_last_month_data_from_dbtasy
-# from send_email import send_standard_mail_prod, send_standard_mail_test
+from send_email import send_standard_mail_prod, send_standard_mail_test
 from src.helper_functions import print_with_time, delete_week_file
 import traceback
 import argparse
 
 
-def ExecuteProgram(download_data=True, preprocess=True, create_file=True, sendEmail=True, test=False, delete_file=True):
+def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, sendEmail=True, delete_file=True):
     print()
     print('*'*80)
     if test:
@@ -46,39 +46,39 @@ def ExecuteProgram(download_data=True, preprocess=True, create_file=True, sendEm
                 print(traceback.format_exc())
                 return
         
-    #     if create_files:
-    #         try:
-    #             df_main_, evol_med_, evol_enf_, prescricoes_, movimentacoes_, hemocultura_, antibiotico_  = gather_info_for_worksheets()
-    #         except:
-    #             print_with_time('Erro ao coletar informações para as planilhas')
-    #             print(traceback.format_exc())
-    #             return
+        if create_file:
+            try:
+                df_base, df_orientacao, df_atestado, df_receita = gather_info_for_worksheets()
+            except:
+                print_with_time('Erro ao coletar informações para as planilhas')
+                print(traceback.format_exc())
+                return
 
-    #         try:
-    #             create_excel_files(df_main_, evol_med_, evol_enf_, prescricoes_, movimentacoes_,  hemocultura_, antibiotico_)
-    #         except:
-    #             print_with_time('Erro ao criar arquivos de excel')
-    #             print(traceback.format_exc())
-    #             return
+            try:
+                create_excel_file(df_base, df_orientacao, df_atestado, df_receita)
+            except:
+                print_with_time('Erro ao criar arquivos de excel')
+                print(traceback.format_exc())
+                return
         
-    #     if sendEmail:
-    #         try:
-    #             if test:
-    #                 send_standard_mail_test()
-    #             else:
-    #                 send_standard_mail_prod()
-    #         except:
-    #             print_with_time('Erro ao enviar emails')
-    #             print(traceback.format_exc())
-    #             return
+        if sendEmail:
+            try:
+                if test:
+                    send_standard_mail_test()
+                else:
+                    send_standard_mail_prod()
+            except:
+                print_with_time('Erro ao enviar emails')
+                print(traceback.format_exc())
+                return
 
-    #     if delete_file:
-    #         try:
-    #             delete_week_file()
-    #         except:
-    #             print_with_time('Erro ao deletar arquivos da semana')
-    #             print(traceback.format_exc())
-    #             return
+        if delete_file:
+            try:
+                delete_week_file()
+            except:
+                print_with_time('Erro ao deletar arquivos da semana')
+                print(traceback.format_exc())
+                return
 
     
 if __name__ == '__main__':

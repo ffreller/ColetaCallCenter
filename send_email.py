@@ -38,6 +38,7 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
 def send_standard_mail(email_destinations):
     fpath = get_excel_fpath()
     dates = str(fpath).split('processed/')[1].split('_callcenter')[0].split('_')
+    dates = [date.replace('-', '/') for date in dates]
     email_subject =f"Planilha CallCenter {dates[0]} - {dates[1]}"
     email_destinations = [item+"@haoc.com.br" if not item.endswith("@haoc.com.br") else item for item in email_destinations]
     email_sender = "relatorios.tasy@haoc.com.br"

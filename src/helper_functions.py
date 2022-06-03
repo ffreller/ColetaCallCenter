@@ -41,7 +41,7 @@ def print_with_time(txt):
 def get_excel_fpath():
     from src.definitions import PROCESSED_DATA_DIR
     start_day, end_day = get_start_and_end_day()
-    fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d/%m/%Y')}_{end_day.strftime('%d/%m/%Y')}_callcenter.xlsx"
+    fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}_callcenter.xlsx"
     return fpath
 
 

@@ -1,3 +1,4 @@
+from matplotlib.pyplot import axis
 import pandas as pd
 from src.helper_functions import print_with_time, crate_telephone_columns, create_expression_columns
 from src.HTMLStripper import strip_html_tags
@@ -49,6 +50,7 @@ def preprocess_atestado_receita(dataset_target):
     
     df0[new_text_column] = df0[text_column].apply(strip_html_tags)
     df1 = create_expression_columns(df0, new_text_column)
+    df1.drop(text_column, axis=1, inplace=True)
     df1.to_pickle(INTERIM_DATA_DIR/fname)
     print_with_time(f'Sucesso ao processar {new_text_column}s')
         
