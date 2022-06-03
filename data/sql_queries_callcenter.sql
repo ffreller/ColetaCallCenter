@@ -218,7 +218,7 @@ select ap.nr_atendimento, mer.dt_receita, mer.dt_liberacao, mer.ds_receita
    and mer.dt_liberacao is not null
  order by 1, 2
 
--- Atestados
+-- Atestado
 select ap.nr_atendimento, ate.dt_atestado, ate.dt_liberacao, ate.ds_atestado
   from tasy.atendimento_paciente ap,
        tasy.pessoa_fisica        pf,

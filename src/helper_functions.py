@@ -25,6 +25,13 @@ def text_contains_any_expression(text):
     return False, 'NÃO'
 
 
+def create_expression_columns(df_, column):
+    df_[column+'_contains_expression'] = df_[column].apply(text_contains_any_expression)
+    df_[column+'_expression'] = df_[column+'_contains_expression'].apply(lambda x: x[1])
+    df_[column+'_contains_expression'] = df_[column+'_contains_expression'].apply(lambda x: x[0])
+    return df_
+
+
 def print_with_time(txt):
     from datetime import datetime
     agora = datetime.now()

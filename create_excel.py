@@ -66,7 +66,7 @@ qualidade_cols_to_leave_blank = ['Paciente com descrição de Cuidados Paliativo
 def gather_info_for_worksheets():
     print_with_time('Agrupando informações para as planilhas')
     atends_coletados = set()
-    #Lendo os datsets
+    # Lendo os datsets
     base = pd.read_pickle(INTERIM_DATA_DIR/'base.pickle')
     evol_med = pd.read_pickle(INTERIM_DATA_DIR/'Evolução_Médica.pickle')
     evol_enf = pd.read_pickle(INTERIM_DATA_DIR/'Evolução_Enfermagem.pickle')
@@ -176,7 +176,7 @@ def gather_info_for_worksheets():
     return df_main, evol_med_coletados, evol_enf_coletados, prescricoes_coletados, movimentacoes_coletados, hemocultura_coletados, antibiotico_coletados
 
 
-def create_excel_file(df_main, df_atestados, df_orientacao, df_receita):
+def create_excel_file(df_main, df_atestado, df_orientacao, df_receita):
     print_with_time('Criando arquivos excel')
     fpath = get_excel_fpath()
     sheet_names = ['Base', 'Atestados', 'Orientações de Alta', 'Receitas']
@@ -204,7 +204,7 @@ def create_excel_file(df_main, df_atestados, df_orientacao, df_receita):
     col_width = 17.4
     
     df_main_.drop('Unidade', axis=1, inplace=True)
-    dfs = [df_main, df_atestados, df_orientacao, df_receita]
+    dfs = [df_main, df_atestado, df_orientacao, df_receita]
     
     for df_, sheet_name in zip(dfs, sheet_names):
         if len(df_) == 0:
