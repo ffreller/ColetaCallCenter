@@ -9,6 +9,7 @@ from src.helper_functions import print_with_time, get_start_and_end_day
 from src.definitions import RAW_DATA_DIR
 from credentials import USUARIO_PROD, SENHA_PROD, USUARIO_TESTE, SENHA_TESTE
 
+
 def create_conn_sqlalchemy(db_tns):
     if db_tns.lower() == 'odi':
         usuario = b64decode(USUARIO_PROD).decode("utf-8")
@@ -48,15 +49,6 @@ def create_conn_cxOracle(db_tns):
 
 
 # Executa query via pandas
-def execute_query_cxOracle_and_load_to_pandas(query, conn, columns):
-    with conn.cursor() as cursor:
-        cursor.execute(query)
-        rows = cursor.fetchall()
-    df = pd.DataFrame(rows, columns=columns)
-    return df
-
-
-# Executa query via pandas
 def execute_query_pandas(query, conn):
     df = pd.read_sql(query, conn)
     return df
@@ -80,29 +72,20 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
     print_with_time(f"Baixando dados do DB_TASY: De {start_date} até {end_date}")
     queries = read_queries_from_file()
     conn_sqlalchemy = create_conn_sqlalchemy('tasy')
-    conn_cxOracle = create_conn_cxOracle('tasy')
     success = True
     for query_name in queries.keys():
         query = queries[query_name]
         query = query.replace('DATE_TO_REPLACE_START', start_date).replace('DATE_TO_REPLACE_END', end_date)
-        if 'evolução' not in query_name.lower():
-            try:
-                df = execute_query_pandas(query, conn_sqlalchemy)
-                # assert len(df) > 0, print(f'Erro ao baixar dados query {query_name.upper()}: dataframe vazio')
-            except Exception as e:
-                print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
-                success = False
-        else:
-            try:
-                df = execute_query_cxOracle_and_load_to_pandas(query, conn_cxOracle)
-            except Exception as e:
-                print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
-                success = False
+        try:
+            df = execute_query_pandas(query, conn_sqlalchemy)
+            # assert len(df) > 0, print(f'Erro ao baixar dados query {query_name.upper()}: dataframe vazio')
+        except Exception as e:
+            print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
+            success = False
         if success:
             print_with_time(f"Query '{query_name.title()}' baixada com sucesso")
             df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     conn_sqlalchemy.dispose()
-    conn_cxOracle.close()
     return success
 
 

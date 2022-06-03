@@ -1,7 +1,7 @@
 from create_excel import create_excel_file, gather_info_for_worksheets
 from preprocess import preprocess_base, preprocess_orientacao, preprocess_atestado_receita
 from dbcomms import retrieve_last_month_data_from_dbtasy
-from send_email import send_standard_mail_prod, send_standard_mail_test
+from send_email import send_mail, send_standard_mail_prod, send_standard_mail_test
 from src.helper_functions import print_with_time, delete_week_file
 import traceback
 import argparse

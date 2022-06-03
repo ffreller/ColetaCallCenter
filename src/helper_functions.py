@@ -1,3 +1,6 @@
+from tkinter.tix import InputOnly
+
+
 def crate_telephone_columns(df_):
     for tipo in ['telefone', 'celular', 'fone_adic']:
         cols = [col for col in df_.columns if col.endswith(tipo)]
@@ -5,6 +8,7 @@ def crate_telephone_columns(df_):
             df_[cols[2]].fillna('').astype(str).str[:-4] + '-' + df_[cols[2]].fillna('').astype(str).str[-4:]
         df_.loc[df_[tipo+'_completo'].str.len() < 9, tipo+'_completo'] = ''
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
+        df_.drop(cols, axis=1, inplace=True)
     return df_
 
 
@@ -23,13 +27,6 @@ def text_contains_any_expression(text):
         if match:
             return True, match.group(0)     
     return False, 'NÃO'
-
-
-def create_expression_columns(df_, column):
-    df_[column+'_contains_expression'] = df_[column].apply(text_contains_any_expression)
-    df_[column+'_expression'] = df_[column+'_contains_expression'].apply(lambda x: x[1])
-    df_[column+'_contains_expression'] = df_[column+'_contains_expression'].apply(lambda x: x[0])
-    return df_
 
 
 def print_with_time(txt):

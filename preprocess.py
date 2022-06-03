@@ -1,6 +1,6 @@
 from matplotlib.pyplot import axis
 import pandas as pd
-from src.helper_functions import print_with_time, crate_telephone_columns, create_expression_columns
+from src.helper_functions import print_with_time, crate_telephone_columns, text_contains_any_expression
 from src.HTMLStripper import strip_html_tags
 from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
 
@@ -29,8 +29,9 @@ def preprocess_orientacao():
     text_column = 'ds_resultado'
     new_text_column = 'orientacao'
     df0.rename(columns={text_column: new_text_column}, inplace=True)
-    df1 = create_expression_columns(df0, new_text_column)
-    df1.to_pickle(INTERIM_DATA_DIR/fname)
+    df0[[new_text_column+'_contains_expression', new_text_column+'_expression']] =\
+        df0.apply(lambda x: text_contains_any_expression(x[new_text_column]), axis=1, result_type="expand")
+    df0.to_pickle(INTERIM_DATA_DIR/fname)
     
     print_with_time('Sucesso ao processar orientações de alta')
     
@@ -49,9 +50,10 @@ def preprocess_atestado_receita(dataset_target):
     df0 = pd.read_pickle(RAW_DATA_DIR/fname)
     
     df0[new_text_column] = df0[text_column].apply(strip_html_tags)
-    df1 = create_expression_columns(df0, new_text_column)
-    df1.drop(text_column, axis=1, inplace=True)
-    df1.to_pickle(INTERIM_DATA_DIR/fname)
+    df0[[new_text_column+'_contains_expression', new_text_column+'_expression']] =\
+        df0.apply(lambda x: text_contains_any_expression(x[new_text_column]), axis=1, result_type="expand")
+    df0.drop(text_column, axis=1, inplace=True)
+    df0.to_pickle(INTERIM_DATA_DIR/fname)
     print_with_time(f'Sucesso ao processar {new_text_column}s')
         
     
