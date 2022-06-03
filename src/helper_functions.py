@@ -54,4 +54,9 @@ def get_start_and_end_day():
     end_day = today - timedelta(days=1)
     start_day = today - timedelta(days=7) 
     return start_day, end_day
+
+
+def generator_from_args(*args):
+    for arg in args:
+        yield arg
     

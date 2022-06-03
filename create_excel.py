@@ -1,6 +1,6 @@
 import pandas as pd
-from src.definitions import INTERIM_DATA_DIR, PROCESSED_DATA_DIR
-from src.helper_functions import print_with_time, get_excel_fpath
+from src.definitions import INTERIM_DATA_DIR
+from src.helper_functions import print_with_time, get_excel_fpath, generator_from_args
 
  
 def gather_info_for_worksheets():
@@ -26,7 +26,7 @@ def gather_info_for_worksheets():
 
 
 def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
-    print_with_time('Criando arquivos excel')
+    print_with_time('Criando arquivo excel')
     fpath = get_excel_fpath()
     options = {'strings_to_formulas' : False, 
                'strings_to_urls' : False}
@@ -44,14 +44,12 @@ def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
         'align': align
     })
     col_width = 17.4
-    
-    def dfs_sheet_names_generator():
-        yield df_main, 'Base'
-        yield df_atestado, 'Orientações de Alta'
-        yield df_orientacao, 'Atestados'
-        yield df_receita, 'Receitas'
        
-    dfs_sheet_names = dfs_sheet_names_generator() 
+    dfs_sheet_names = zip(
+        generator_from_args(df_main, df_orientacao, df_atestado, df_receita),
+        generator_from_args('Base', 'Orientações de Alta', 'Atestados', 'Receitas')
+    )
+    
     for _ in range(4):
         df_, sheet_name = next(dfs_sheet_names)
         if len(df_) == 0:
@@ -65,7 +63,7 @@ def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
             writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
     writer.save()
     
-    print_with_time('Arquivos excel criados com sucesso')
+    print_with_time('Arquivo excel criados com sucesso')
 
 
 if __name__ == '__main__':
