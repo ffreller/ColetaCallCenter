@@ -1,7 +1,7 @@
 import pandas as pd
-from src.definitions import INTERIM_DATA_DIR, RAW_DATA_DIR
+from src.definitions import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, RAW_DATA_DIR
 from src.helper_functions import print_with_time, get_time_between_evolucao_med_com_sepse,\
-    apply_rtf_and_bold_expression, hemocultura_antibiotico_dentro_do_periodo, get_selecionados_fn_for_month
+    apply_rtf_and_bold_expression, hemocultura_antibiotico_dentro_do_periodo, get_excel_fpath
 
 cols_names = {
     'NR_ATENDIMENTO':'Número de Atendimento',
@@ -74,8 +74,6 @@ def gather_info_for_worksheets():
     movimentacoes = pd.read_pickle(RAW_DATA_DIR/'Movimentações_Setores.pickle')
     hemocultura = pd.read_pickle(RAW_DATA_DIR/'Hemocultura.pickle')
     antibiotico = pd.read_pickle(RAW_DATA_DIR/'Antibiótico.pickle')
-    
-    movimentacoes.columns = [col.upper() for col in movimentacoes.columns]
     
     for col in ['cid_sepse', 'ENTRADA_GRUPO', 'CODIGO_AMARELO']:
         n_atends_ = base[base[col] == True]['NR_ATENDIMENTO'].unique()
@@ -178,87 +176,50 @@ def gather_info_for_worksheets():
     return df_main, evol_med_coletados, evol_enf_coletados, prescricoes_coletados, movimentacoes_coletados, hemocultura_coletados, antibiotico_coletados
 
 
-def create_df_equipe_sepse(df_main, df_mov):
-    df0 = df_main[['Número de Atendimento', 'Nome do paciente', 'Prontuário', 'Condição de saída',
-                   'Data e hora da admissão no Hospital', 'Data e hora da saída hospitalar', 'Menor data de evolução médica com palavra relacionada a sepse']].copy()
-    df0['Tempo de permanência hospitalar'] = df0['Data e hora da saída hospitalar'] - df0['Data e hora da admissão no Hospital']
-    df0['Tempo de permanência hospitalar'] = df0['Tempo de permanência hospitalar'].astype(str).str.replace('day', 'dia')
-    
-    df1 = df0.merge(df_mov[['NR_ATENDIMENTO', 'DT_ENTRADA_UNIDADE','DT_SAIDA_UNIDADE']],
-                    left_on='Número de Atendimento', right_on='NR_ATENDIMENTO', how='left')
-    duplicados = df1.sort_values('DT_ENTRADA_UNIDADE').duplicated(subset='Número de Atendimento', keep='first')
-    df1 = df1.loc[~duplicados, :].drop('NR_ATENDIMENTO', axis=1).copy()
-    df1.rename(columns={'DT_ENTRADA_UNIDADE': 'Data e hora da primeira admissão à UTI',
-                        'DT_SAIDA_UNIDADE': 'Data e hora da primeira saída da UTI',
-                        'Menor data de evolução médica com palavra relacionada a sepse':"Data e hora do diagnóstico de sepse/ Abertura do Protocolo (preenchimento automático, favor revisar)"}, inplace=True)
-    df1 = df1.reindex(columns=qualidade_final_columns)
-    df1[qualidade_cols_to_leave_blank] = df1[qualidade_cols_to_leave_blank].fillna('')
-    return df1
-
-
-def create_excel_files(df_main, df_evol_med, df_evol_enf, df_prescricoes, df_movimentacoes, df_hemocultura, df_antibiotico):
+def create_excel_file(df_main, df_atestados, df_orientacao, df_receita):
     print_with_time('Criando arquivos excel')
-    df_equipe_sepse = create_df_equipe_sepse(df_main, df_movimentacoes)
-    df_main.drop('Condição de saída', axis=1, inplace=True)
-    all_expressions = df_evol_med['match'].unique()
-    df_evol_med['EVOLUCAO_MED'] = df_evol_med['EVOLUCAO_MED'].apply(
-        lambda x: apply_rtf_and_bold_expression(x, all_expressions))
-    
-    sheet_names = ['Controle equipe sepse', 'Pacientes coletados', 'Evoluções médicas', 'Evoluções enfermagem', 'Prescrições Protocolo Sepse',
-                   'Movimentações na UTI', 'Hemocultura', 'Antibiótico']
-
+    fpath = get_excel_fpath()
+    sheet_names = ['Base', 'Atestados', 'Orientações de Alta', 'Receitas']
     options = {}
     options['strings_to_formulas'] = False
     options['strings_to_urls'] = False
-    for unidade in ['Paulista', 'Vergueiro']:
-        selecionados_fn = get_selecionados_fn_for_month(unidade=unidade)
-        df_main_, df_evol_med_, df_evol_enf_, df_prescricoes_, df_movimentacoes_, df_hemocultura_, df_antibiotico_, df_equipe_sepse_ = \
-            df_main.copy(), df_evol_med.copy(), df_evol_enf.copy(), df_prescricoes.copy(), df_movimentacoes.copy(), df_hemocultura.copy(), df_antibiotico.copy(), df_equipe_sepse.copy()
+        
+    writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
+    workbook  = writer.book
+    align = 'center'
+    index_format = workbook.add_format({
+        'text_wrap': True,
+        'bold':True,
+        'align': align,
+        'valign': 'vcenter',
+        'border':True
+    })
+    columns_format = workbook.add_format({
+        'align': align
+    })
+    percent_fmt = workbook.add_format({
+        'num_format': '0.00%',
+        'align': align
+    })
+    col_width = 17.4
+    
+    df_main_.drop('Unidade', axis=1, inplace=True)
+    dfs = [df_main, df_atestados, df_orientacao, df_receita]
+    
+    for df_, sheet_name in zip(dfs, sheet_names):
+        if len(df_) == 0:
+            print_with_time(f"AVISO: Planilha '{sheet_name}' está vazia")
+            continue
+        df_.to_excel(writer, sheet_name=sheet_name, index=False)
+        colunas = df_.columns
+        writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
+        writer.sheets[sheet_name].autofilter(0, 0,  len(df_)-1, len(colunas)-1)
+        for column_idx, column in enumerate(colunas):
+            writer.sheets[sheet_name].write(0, column_idx, column, index_format)
             
-        writer = pd.ExcelWriter(selecionados_fn, engine='xlsxwriter', engine_kwargs={'options':options})
-        workbook  = writer.book
-        align = 'center'
-        index_format = workbook.add_format({
-            'text_wrap': True,
-            'bold':True,
-            'align': align,
-            'valign': 'vcenter',
-            'border':True
-        })
-        columns_format = workbook.add_format({
-            'align': align
-        })
-        percent_fmt = workbook.add_format({
-            'num_format': '0.00%',
-            'align': align
-        })
-        col_width = 17.4
-        
-        n_atends_unidade = df_main_[df_main_['Unidade'] == unidade]['Número de Atendimento'].unique().tolist()
-        df_main_.drop('Unidade', axis=1, inplace=True)
-        dfs = [df_equipe_sepse_, df_main_, df_evol_med_, df_evol_enf_, df_prescricoes_, df_movimentacoes_, df_hemocultura_, df_antibiotico_]
-        for i, df_ in enumerate(dfs):
-            if i <= 1:
-                n_atend_col = 'Número de Atendimento'
-            else:
-                n_atend_col = 'NR_ATENDIMENTO'
-            to_drop = df_.loc[~df_[n_atend_col].isin(n_atends_unidade)].index
-            df_.drop(to_drop, inplace=True)
-        
-        for df_, sheet_name in zip(dfs, sheet_names):
-            if len(df_) == 0:
-                print_with_time(f"AVISO: Planilha '{sheet_name}' da {unidade} está vazia")
-                continue
-            df_.to_excel(writer, sheet_name=sheet_name, index=False)
-            colunas = df_.columns
-            writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
-            writer.sheets[sheet_name].autofilter(0, 0,  len(df_)-1, len(colunas)-1)
-            for column_idx, column in enumerate(colunas):
-                writer.sheets[sheet_name].write(0, column_idx, column, index_format)
-                
-            if sheet_name == 'Pacientes coletados':
-                column_idx = list(colunas).index('Proporção de evoluções médicas que contêm palavra relacionada a sepse')
-                writer.sheets[sheet_name].set_column(column_idx, column_idx, col_width, cell_format=percent_fmt)
+        if sheet_name == 'Pacientes coletados':
+            column_idx = list(colunas).index('Proporção de evoluções médicas que contêm palavra relacionada a sepse')
+            writer.sheets[sheet_name].set_column(column_idx, column_idx, col_width, cell_format=percent_fmt)
                 
         writer.save()
     

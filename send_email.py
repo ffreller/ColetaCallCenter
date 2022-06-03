@@ -4,7 +4,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
-from src.helper_functions import print_with_time, get_selecionados_fn_for_month
+from src.helper_functions import print_with_time, get_excel_fpath
 from credentials import SMTP_SERVER, SMTP_PORT
 
 
@@ -36,14 +36,14 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     
     
 def send_standard_mail(email_destinations):
-    selecionados_fn_paulista, selecionados_fn_vergueiro = get_selecionados_fn_for_month()
-    mes_ano = str(selecionados_fn_paulista)[-12:-5]
-    email_subject =f"Planilhas Sepse {mes_ano.replace('-', '/')}"
+    fpath = get_excel_fpath()
+    dates = str(fpath).split('processed/')[1].split('_callcenter')[0].split('_')
+    email_subject =f"Planilha CallCenter {dates[0]} - {dates[1]}"
     email_destinations = [item+"@haoc.com.br" if not item.endswith("@haoc.com.br") else item for item in email_destinations]
     email_sender = "relatorios.tasy@haoc.com.br"
     email_text = f"""Caro(a) colaborador(a),
     
-                    Seguem anexas as planilhas de Sepse das unidades Paulista e Vergueiro para o mês {mes_ano.replace('-', '/')}.
+                    Seguem anexas as planilhas de Sepse das unidades Paulista e Vergueiro para o semana do dia {dates[0]} até o dia {dates[1]}.
 
                     Atenciosamente,
                     Equipe Datalab.
@@ -55,7 +55,7 @@ def send_standard_mail(email_destinations):
     send_mail(send_from = email_sender, send_to=email_destinations,
               subject=email_subject, text=email_text,
               server=SMTP_SERVER, port=SMTP_PORT,
-              files=[selecionados_fn_paulista, selecionados_fn_vergueiro])
+              files=[fpath])
     print_with_time('Email enviado com sucesso!')
 
 
@@ -68,8 +68,7 @@ def send_standard_mail_test():
 def send_standard_mail_prod():
     email_destinations = ['ffreller',
                           'dagsilva',
-                          'elisa.habiro',
-                          'vsiqueira'
+                          'elisa.habiro'
                           ]
     print_with_time(f"Enviando email (prod) para: {', '.join(email_destinations)}")
     send_standard_mail(email_destinations)

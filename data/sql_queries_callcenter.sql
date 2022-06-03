@@ -28,12 +28,9 @@ select nr_atendimento,
        base.dt_nascimento,
        base.nm_social,
        base.nm_pessoa_fisica,
-       --base.ds_tipo_atendimento,
        base.dt_entrada,
        base.dt_alta,
        base.ds_motivo_alta,
-       --base.tipo_contato,
-       --base.nm_contato,
        base.ds_email,
        base.nr_ddi_telefone,
        base.nr_ddd_telefone,
@@ -45,12 +42,10 @@ select nr_atendimento,
        base.nr_ddi_celular,
        base.nr_ddd_celular,
        base.nr_telefone_celular,
-       --base.cd_setor_atendimento,
        (select vd.ds_valor_dominio
           from tasy.valor_dominio vd
          where vd.cd_dominio = 1
            and vd.vl_dominio = sa.cd_classif_setor) ds_classif_setor,
-       --sa.ds_setor_atendimento,
        min(con.dt_agenda_consulta) over(partition by base.cd_pessoa_fisica) min_dt_agenda_consulta,
        con.*,
        min(exa.dt_agenda_exame) over(partition by base.cd_pessoa_fisica) min_dt_agenda_exame,
@@ -105,24 +100,19 @@ select nr_atendimento,
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
            and cpf.ie_tipo_complemento = 1
-           and ap.cd_motivo_alta <> 7 -- Óbito
-              --and ap.ie_tipo_atendimento in (1,3,7)
-              --and ap.dt_entrada >= to_date('01/01/2016','dd/mm/rrrr')
+           and ap.cd_motivo_alta <> 7
            and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and
                to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
            and ap.dt_cancelamento is null
            and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
            and ap.cd_pessoa_fisica = cpf.cd_pessoa_fisica(+)
-           --and ap.CD_PESSOA_FISICA = 737213
-           --and ap.nr_atendimento = 4051720
            and (cpf.ds_email is not null or cpf.nr_telefone is not null or
                cpf.ds_fone_adic is not null or
                cpf.nr_telefone_celular is not null)) base,
        tasy.setor_atendimento sa,
        (select ag.cd_estabelecimento,
                ac.dt_agenda dt_agenda_consulta,
-               pf.cd_pessoa_fisica,
-               --pf.nm_pessoa_fisica,  
+               pf.cd_pessoa_fisica, 
                ac.ie_status_agenda,
                (select vd.ds_valor_dominio
                   from tasy.valor_dominio vd
@@ -142,15 +132,13 @@ select nr_atendimento,
            and ap.cd_pessoa_fisica = ac.cd_pessoa_fisica
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
-           and ap.cd_motivo_alta <> 7 -- Óbito
+           and ap.cd_motivo_alta <> 7
            and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and
                to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
            and ap.dt_cancelamento is null
            and ac.ie_status_agenda <> 'C') con,
        (select agp.cd_pessoa_fisica cd_pessoa_fisica_exame,
-               --ag.ds_agenda,
                agp.hr_inicio dt_agenda_exame,
-               --agp.ie_status_agenda,
                (select ds_expressao ds
                   from tasy.valor_dominio_v
                  where cd_dominio = 83
@@ -158,30 +146,22 @@ select nr_atendimento,
                    and tasy.obter_se_exibe_status(vl_dominio,
                                                   tasy.obter_tipo_agenda(ag.cd_agenda),
                                                   ag.cd_estabelecimento) = 'S') ds_status_agenda_exame,
-               --agp.cd_medico,
-               --substr(tasy.obter_nome_pf(agp.cd_medico), 1, 200) nm_medico,
-               --agp.cd_procedimento,
-               --agp.ie_origem_proced,
-               --agp.nr_seq_proc_interno,
                substr(tasy.obter_descricao_procedimento(agp.cd_procedimento,
                                                         agp.ie_origem_proced),
                       1,
-                      150) ds_procedimento /*,
-               (select ds_proc_exame
-                  from tasy.proc_interno
-                 where nr_sequencia = agp.nr_seq_proc_interno) ds_proc_interno*/
+                      150) ds_procedimento
           from tasy.agenda               ag,
                tasy.agenda_paciente      agp,
                tasy.atendimento_paciente ap
          where 1 = 1
            and ag.cd_agenda = agp.cd_agenda
-           and ag.cd_tipo_agenda = 2 --exames
+           and ag.cd_tipo_agenda = 2
            and ag.cd_estabelecimento = 1
            and agp.cd_pessoa_fisica = ap.cd_pessoa_fisica
            and agp.ie_status_agenda <> 'C'
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
-           and ap.cd_motivo_alta <> 7 --Óbito
+           and ap.cd_motivo_alta <> 7
            and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')) exa
  where 1=1 
    and base.cd_setor_atendimento = sa.cd_setor_atendimento
@@ -196,7 +176,6 @@ select nr_atendimento,
 select ap.nr_atendimento,
        tc.ds_label,
        re.ds_resultado,
-       --m.nm_guerra medico,
        to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') ds_utc
   from tasy.ehr_registro          r,
        tasy.ehr_reg_template      rt,
@@ -204,22 +183,19 @@ select ap.nr_atendimento,
        tasy.ehr_elemento          e,
        tasy.ehr_template_conteudo tc,
        tasy.atendimento_paciente  ap
-       --tasy.medico                m
  where r.nr_sequencia = rt.nr_seq_reg
    and rt.nr_sequencia = re.nr_seq_reg_template
    and e.nr_sequencia = re.nr_seq_elemento
    and e.nr_sequencia = tc.nr_seq_elemento
    and tc.nr_seq_template = rt.nr_seq_template
    and r.nr_atendimento = ap.nr_atendimento
-   --and r.cd_profissional = m.cd_pessoa_fisica(+)
-   and tc.nr_seq_template = 100531 --Resumo de Internação Médica [HTML]
-   and re.nr_seq_elemento in (469, --Observações
-                              9000524, --Outros
-                              9000550) --Retorno médico em
-   --and ap.nr_atendimento = 4071177
+   and tc.nr_seq_template = 100531
+   and re.nr_seq_elemento in (469,
+                              9000524,
+                              9000550)
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7 --Óbito
+   and ap.cd_motivo_alta <> 7
    and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
    and ap.dt_cancelamento is null
    and r.dt_liberacao is not null
@@ -234,7 +210,7 @@ select ap.nr_atendimento, mer.dt_receita, mer.dt_liberacao, mer.ds_receita
  where 1 = 1
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7 --Óbito
+   and ap.cd_motivo_alta <> 7
    and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
    and ap.dt_cancelamento is null
    and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
@@ -250,7 +226,7 @@ select ap.nr_atendimento, ate.dt_atestado, ate.dt_liberacao, ate.ds_atestado
  where 1 = 1
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7 --Óbito
+   and ap.cd_motivo_alta <> 7 
    and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
    and ap.dt_cancelamento is null
    and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica

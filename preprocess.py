@@ -1,6 +1,6 @@
 import pandas as pd
-from src.helper_functions import text_contains_sepse_expression, text_contains_sepse_expression_with_text, campo_sepse_med, remove_campo_sepse_from_text_med,\
-    remove_antecedentes_from_text, text_contains_codigo_amarelo, text_contains_cuidados_paliativos, my_rtf_to_text, print_with_time, strip_html_tags
+from src.helper_functions import *
+from src.HTMLStripper import strip_html_tags
 from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
 
 

@@ -5,7 +5,7 @@ import re
 import cx_Oracle
 from datetime import datetime
 from sqlalchemy import create_engine
-from src.helper_functions import print_with_time, get_last_month_and_year
+from src.helper_functions import print_with_time, get_start_and_end_day
 from src.definitions import RAW_DATA_DIR
 from credentials import USUARIO_PROD, SENHA_PROD, USUARIO_TESTE, SENHA_TESTE
 
@@ -64,7 +64,7 @@ def execute_query_pandas(query, conn):
 
 def read_queries_from_file(fpath=None):
     if not fpath:
-        fpath = 'data/sql_queries_call_center.sql'
+        fpath = 'data/sql_queries_callcenter.sql'
     with open(fpath, 'r') as f:
         sqlFile = f.read()
     query_names = re.findall('-- (.*)', sqlFile)
@@ -75,6 +75,8 @@ def read_queries_from_file(fpath=None):
 
 # Script para baixar dados do HAOC_TASY_PROD
 def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
+    start_date = start_date.strftime('%d/%m/%Y')
+    end_date = end_date.strftime('%d/%m/%Y')
     print_with_time(f"Baixando dados do DB_TASY: De {start_date} até {end_date}")
     queries = read_queries_from_file()
     conn_sqlalchemy = create_conn_sqlalchemy('tasy')
@@ -87,7 +89,6 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
             try:
                 df = execute_query_pandas(query, conn_sqlalchemy)
                 # assert len(df) > 0, print(f'Erro ao baixar dados query {query_name.upper()}: dataframe vazio')
-                df.columns = [col.upper() for col in df.columns]
             except Exception as e:
                 print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
                 success = False
@@ -107,9 +108,5 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
 
 # Script para baixar dados do mês passado HAOC_TASY_PROD
 def retrieve_last_month_data_from_dbtasy():
-    target_month, target_year, next_month, year_of_next_month = get_last_month_and_year()
-    first_day_of_target_month = datetime(year=target_year, month=target_month, day=1)
-    first_day_of_next_month = datetime(year=year_of_next_month, month=next_month, day=1)
-    start = first_day_of_target_month.strftime('%d/%m/%Y')
-    end = first_day_of_next_month.strftime('%d/%m/%Y')
-    return retrieve_data_from_dbtasy_using_dates(start, end)
+    last_friday, this_thursday = get_start_and_end_day()
+    return retrieve_data_from_dbtasy_using_dates(last_friday, this_thursday)
