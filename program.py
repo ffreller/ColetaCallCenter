@@ -1,5 +1,5 @@
 from create_excel import create_excel_file, gather_info_for_worksheets
-from preprocess import preprocess_base, preprocess_resumo_internacao, preprocess_atestado_receita
+from preprocess import preprocess_base, preprocess_secondary_table
 from dbcomms import retrieve_last_month_data_from_dbtasy
 from send_email import send_standard_mail_prod, send_standard_mail_test
 from src.helper_functions import print_with_time, delete_week_file
@@ -26,21 +26,21 @@ def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, 
                 return
             
             try:
-                preprocess_resumo_internacao()
+                preprocess_secondary_table(dataset_name='resumo de internação médica')
             except:
                 print_with_time('Erro ao processar prescrições')
                 print(format_exc())
                 return
             
             try:
-                preprocess_atestado_receita('atestado')
+                preprocess_secondary_table(dataset_name='atestado')
             except:
                 print_with_time('Erro ao processar evoluções médicas')
                 print(format_exc())
                 return
             
             try:
-                preprocess_atestado_receita('receita')
+                preprocess_secondary_table(dataset_name='receita')
             except:
                 print_with_time('Erro ao processar evoluções da enfermagem')
                 print(format_exc())
@@ -87,6 +87,6 @@ if __name__ == '__main__':
     parser.set_defaults(test=False)
     args = parser.parse_args()
     test = args.test
-    ExecuteProgram(test=test)
+    ExecuteProgram(test=test, download_data=False, sendEmail=False, delete_file=False)
     # ExecuteProgram(download_data=False, preprocess=False, create_file=True,
     #                sendEmail=True, test=test, delete_file=True)

@@ -1,6 +1,6 @@
 import pandas as pd
 from src.definitions import INTERIM_DATA_DIR
-from src.helper_functions import print_with_time, get_excel_fpath, generator_from_args
+from src.helper_functions import print_with_time, get_excel_fpath, generator_from_args, apply_rtf_and_bold_expression
 
  
 def gather_info_for_worksheets():
@@ -22,12 +22,25 @@ def gather_info_for_worksheets():
     base['Palavras chave no Atestado'] = base['nr_atendimento'].isin(atends_atestado_expression)
     base['Palavras chave na Receita'] = base['nr_atendimento'].isin(atends_receita_expression)
     
+    all_expressions = set(list(resumo_internacao.iloc[:, -1].unique()) + \
+        list(atestado.iloc[:, -1].unique()) + list(receita.iloc[:, -1].unique())
+    )
+    for df_, text_column in [
+            (resumo_internacao, 'resumo_internacao'),
+            (atestado, 'atestado'),
+            (receita, 'receita')
+        ]:
+
+        df_[text_column] = df_[text_column].apply(
+            lambda x: apply_rtf_and_bold_expression(x, all_expressions))
+    
     return base, resumo_internacao, atestado, receita
 
 
 def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
     print_with_time('Criando arquivo excel')
     fpath = get_excel_fpath()
+    
     options = {'strings_to_formulas' : False, 
                'strings_to_urls' : False}
     writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})

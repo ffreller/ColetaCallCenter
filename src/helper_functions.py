@@ -1,6 +1,3 @@
-from tkinter.tix import InputOnly
-
-
 def crate_telephone_columns(df_):
     for tipo in ['telefone', 'celular', 'fone_adic']:
         cols = [col for col in df_.columns if col.endswith(tipo)]
@@ -9,12 +6,15 @@ def crate_telephone_columns(df_):
         df_.loc[df_[tipo+'_completo'].str.len() < 9, tipo+'_completo'] = ''
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
         df_.drop(cols, axis=1, inplace=True)
-    return df_
+    columns = list(df_.columns)
+    columns.remove('nr_ramal')
+    columns.insert(-2, 'nr_ramal')
+    return df_[columns]
 
 
 def text_contains_any_expression(text):
     if type(text) != str:
-        return False, 'NAO'
+        return False, 'NÃO'
     import re
     expressions = [" solic(ito|itado|itada|it\.|\.)",  " ret(\.|orno|ornar)", " encam(\.|inho|inha)", " orient(\.|o|ad)",
             " (tomo| ct| tc)(\.|grafia| )", " ressonância|ressonancia| rm", " (ultrasso(m|nografia)|( usg| us)(\.| ))",
@@ -59,4 +59,30 @@ def get_start_and_end_day():
 def generator_from_args(*args):
     for arg in args:
         yield arg
+
+def my_rtf_to_text(rtf):
+    from striprtf.striprtf import rtf_to_text
+    if 'rtf' not in rtf:
+        return rtf
+    return rtf_to_text(rtf, errors='ignore')
+
+   
+def apply_rtf_and_bold_expression(text, all_expressions):
+    found_expression = False
+    if type(text) != str or len(text) <= 30:
+        return text
+    new_text = """{\\rtf1 {\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;}""" + text + "}"
+    for expression in all_expressions:
+        if expression == 'NÃO':
+            continue
+        if expression in new_text:
+            new_text = new_text.replace(expression, f"\\b {expression} \\b0")
+            found_expression = True
+        elif expression.capitalize() in new_text:
+            new_text = new_text.replace(expression.capitalize(), f"\\b {expression.capitalize()} \\b0")
+            found_expression = True
+        
+        new_text = new_text.replace('\\b ', '\\cf2\\b ')
+        new_text = new_text.replace(' \\b0', ' \\b0\\cf')
+    return new_text if found_expression else text
     

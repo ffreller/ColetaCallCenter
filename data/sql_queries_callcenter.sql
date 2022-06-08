@@ -16,7 +16,8 @@ select nr_atendimento,
        ds_fone_adic,
        nr_ddi_celular,
        nr_ddd_celular,
-	   nr_telefone_celular,
+       nr_telefone_celular,
+       ds_mala_direta,
        ds_classif_setor,
        dt_agenda_consulta,
        ds_status_agenda_consulta,
@@ -42,6 +43,7 @@ select nr_atendimento,
        base.nr_ddi_celular,
        base.nr_ddd_celular,
        base.nr_telefone_celular,
+       base.ds_mala_direta,
        (select vd.ds_valor_dominio
           from tasy.valor_dominio vd
          where vd.cd_dominio = 1
@@ -79,6 +81,7 @@ select nr_atendimento,
                cpf.nr_ddi_celular,
                cpf.nr_ddd_celular,
                cpf.nr_telefone_celular,
+               case when cpf.ie_mala_direta = 'S' then 'Sim' when cpf.ie_mala_direta = 'N' then 'Não' else cpf.ie_mala_direta end ds_mala_direta,
                (Select distinct first_value(apu_sub.cd_setor_atendimento) over(order by apu_sub.nr_seq_interno desc)
                   from tasy.atend_paciente_unidade apu_sub
                  where 1 = 1
@@ -171,7 +174,6 @@ select nr_atendimento,
  and nvl(min_dt_agenda_exame, sysdate) = nvl(dt_agenda_exame, sysdate)
  order by 1
 
-
 -- Resumo de Internação Médica
 select ap.nr_atendimento,
        tc.ds_label,
@@ -233,4 +235,4 @@ select ap.nr_atendimento, ate.dt_atestado, ate.dt_liberacao, ate.ds_atestado
    and ap.nr_atendimento = ate.nr_atendimento
    and ate.dt_liberacao is not null
  order by 1, 2
-
+ 
