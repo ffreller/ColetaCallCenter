@@ -1,19 +1,19 @@
 Na 1a vez:
-1. Rodar <git clone https://github.com/ffreller/analise_sepse>
-2. Entrar no diretório criado <cd analise_sepse>
+1. Rodar <git clone https://github.com/ffreller/ColetaCallCenter>
+2. Entrar no diretório criado <cd analise_callcenter>
 3. Transferir pasta instantclient_21_5 para o diretório
 4. Transferir arquivo credentials.py para o diretório
-5. Rodar <conda create -n analise_sepse python=3.7 -y>
-6. Rodar <conda activate analise_sepse>
+5. Rodar <conda create -n analise_callcenter python=3.7 -y>
+6. Rodar <conda activate analise_callcenter>
 5. Rodar <pip install -r requirements.txt>
 
 Quando for rodar:
 6. Rodar < python main.py >> log.txt >
 
-git clone https://github.com/ffreller/analise_sepse
-cd analise_sepse
-conda create -n analise_sepse python=3.7 -y
-conda activate analise_sepse
+git clone https://github.com/ffreller/ColetaCallCenter
+cd ColetaCallCenter
+conda create -n analise_callcenter python=3.7 -y
+conda activate analise_callcenter
 pip install -r requirements.txt
 python main.py
 

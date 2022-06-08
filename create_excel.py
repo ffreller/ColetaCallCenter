@@ -7,25 +7,25 @@ def gather_info_for_worksheets():
     print_with_time('Agrupando informações para as planilhas')
     # Lendo os datsets
     base = pd.read_pickle(INTERIM_DATA_DIR/'Base.pickle')
-    orientacao = pd.read_pickle(INTERIM_DATA_DIR/'Orientação_De_Alta.pickle')
+    resumo_internacao = pd.read_pickle(INTERIM_DATA_DIR/'Resumo_De_Internação_Médica.pickle')
     atestado = pd.read_pickle(INTERIM_DATA_DIR/'Atestado.pickle')
     receita = pd.read_pickle(INTERIM_DATA_DIR/'Receita.pickle')
     
-    atends_orientacao_expression = orientacao[orientacao['orientacao_contains_expression']]['nr_atendimento'].unique().tolist()
-    atends_retorno_medico_assinalado = orientacao[orientacao['retorno_medico_s']]['nr_atendimento'].unique().tolist()
+    atends_resumo_internacao_expression = resumo_internacao[resumo_internacao['resumo_internacao_contains_expression']]['nr_atendimento'].unique().tolist()
+    atends_retorno_medico_assinalado = resumo_internacao[resumo_internacao['retorno_medico_s']]['nr_atendimento'].unique().tolist()
     
     atends_atestado_expression = atestado[atestado['atestado_contains_expression']]['nr_atendimento'].unique().tolist()
     atends_receita_expression = receita[receita['receita_contains_expression']]['nr_atendimento'].unique().tolist()
     
-    base['Orientação de alta'] = base['nr_atendimento'].isin(atends_orientacao_expression)
-    base['Retorno médico assinalado'] = base['nr_atendimento'].isin(atends_retorno_medico_assinalado)
-    base['Atestado'] = base['nr_atendimento'].isin(atends_atestado_expression)
-    base['Receita'] = base['nr_atendimento'].isin(atends_receita_expression)
+    base['Palavras chave no Resumo de internação médica'] = base['nr_atendimento'].isin(atends_resumo_internacao_expression)
+    base['Retorno médico assinalado no Resumo de internação médica'] = base['nr_atendimento'].isin(atends_retorno_medico_assinalado)
+    base['Palavras chave no Atestado'] = base['nr_atendimento'].isin(atends_atestado_expression)
+    base['Palavras chave na Receita'] = base['nr_atendimento'].isin(atends_receita_expression)
     
-    return base, orientacao, atestado, receita
+    return base, resumo_internacao, atestado, receita
 
 
-def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
+def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
     print_with_time('Criando arquivo excel')
     fpath = get_excel_fpath()
     options = {'strings_to_formulas' : False, 
@@ -46,8 +46,8 @@ def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
     col_width = 17.4
        
     dfs_sheet_names = zip(
-        generator_from_args(df_main, df_orientacao, df_atestado, df_receita),
-        generator_from_args('Base', 'Orientações de Alta', 'Atestados', 'Receitas')
+        generator_from_args(df_main, df_resumo_internacao, df_atestado, df_receita),
+        generator_from_args('Base', 'Resumo de Internação Médica', 'Atestados', 'Receitas')
     )
     
     for _ in range(4):
@@ -67,5 +67,5 @@ def create_excel_file(df_main, df_orientacao, df_atestado, df_receita):
 
 
 if __name__ == '__main__':
-    df_base, df_orientacao, df_atestado, df_receita = gather_info_for_worksheets()
-    create_excel_file(df_base, df_orientacao, df_atestado, df_receita)
+    df_base, df_resumo_internacao, df_atestado, df_receita = gather_info_for_worksheets()
+    create_excel_file(df_base, df_resumo_internacao, df_atestado, df_receita)

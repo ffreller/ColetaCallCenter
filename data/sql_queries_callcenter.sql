@@ -172,7 +172,7 @@ select nr_atendimento,
  order by 1
 
 
--- Orientação de Alta
+-- Resumo de Internação Médica
 select ap.nr_atendimento,
        tc.ds_label,
        re.ds_resultado,

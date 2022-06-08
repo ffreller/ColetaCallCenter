@@ -44,7 +44,7 @@ def send_standard_mail(email_destinations):
     email_sender = "relatorios.tasy@haoc.com.br"
     email_text = f"""Caro(a) colaborador(a),
     
-                    Seguem anexas as planilhas de Sepse das unidades Paulista e Vergueiro para o semana do dia {dates[0]} até o dia {dates[1]}.
+                    Seguem anexas as planilhas para a semana do dia {dates[0]} até o dia {dates[1]}.
 
                     Atenciosamente,
                     Equipe Datalab.
@@ -69,6 +69,7 @@ def send_standard_mail_test():
 def send_standard_mail_prod():
     email_destinations = ['ffreller',
                           'dagsilva',
+                          'edjsouza',
                           'elisa.habiro'
                           ]
     print_with_time(f"Enviando email (prod) para: {', '.join(email_destinations)}")

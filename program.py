@@ -1,5 +1,5 @@
 from create_excel import create_excel_file, gather_info_for_worksheets
-from preprocess import preprocess_base, preprocess_orientacao, preprocess_atestado_receita
+from preprocess import preprocess_base, preprocess_resumo_internacao, preprocess_atestado_receita
 from dbcomms import retrieve_last_month_data_from_dbtasy
 from send_email import send_standard_mail_prod, send_standard_mail_test
 from src.helper_functions import print_with_time, delete_week_file
@@ -26,7 +26,7 @@ def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, 
                 return
             
             try:
-                preprocess_orientacao()
+                preprocess_resumo_internacao()
             except:
                 print_with_time('Erro ao processar prescrições')
                 print(format_exc())
@@ -48,14 +48,14 @@ def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, 
         
         if create_file:
             try:
-                df_base, df_orientacao, df_atestado, df_receita = gather_info_for_worksheets()
+                df_base, df_resumo_internacao, df_atestado, df_receita = gather_info_for_worksheets()
             except:
                 print_with_time('Erro ao coletar informações para as planilhas')
                 print(format_exc())
                 return
 
             try:
-                create_excel_file(df_base, df_orientacao, df_atestado, df_receita)
+                create_excel_file(df_base, df_resumo_internacao, df_atestado, df_receita)
             except:
                 print_with_time('Erro ao criar arquivo de excel')
                 print(format_exc())
@@ -90,4 +90,3 @@ if __name__ == '__main__':
     ExecuteProgram(test=test)
     # ExecuteProgram(download_data=False, preprocess=False, create_file=True,
     #                sendEmail=True, test=test, delete_file=True)
-    

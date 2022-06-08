@@ -1,16 +1,16 @@
-1. Rodar <git clone https://github.com/ffreller/analise_sepse> no diretório /bigdata/
+1. Rodar <git clone https://github.com/ffreller/ColetaCallCenter> no diretório /bigdata/
 2. Transferir pasta instantclient_21_5 para o diretório
 3. Transferir arquivo credentials.py para o diretório
-4. Rodar <conda create -n analise_sepse python=3.7 -y>
-5. Rodar <conda activate analise_sepse>
+4. Rodar <conda create -n analise_callcenter python=3.7 -y>
+5. Rodar <conda activate analise_callcenter>
 6. Rodar <pip install -r requirements.txt>
 7. Abrir crontab
 8. Adicionar linha:<
-    0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_sepse/bin/python /bigdata/analise_sepse/main.py >> /bigdata/analise_sepse/log_cron.txt
+    0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_callcenter/bin/python /bigdata/ColetaCallCenter/main.py >> /bigdata/ColetaCallCenter/log_cron.txt
 >
 9. Salvar
-conda create -n analise_sepse python=3.7 -y
-conda activate analise_sepse
+conda create -n analise_callcenter python=3.7 -y
+conda activate analise_callcenter
 pip install -r requirements.txt
 python main.py
 

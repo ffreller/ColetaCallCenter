@@ -17,23 +17,23 @@ def preprocess_base():
     print_with_time('Sucesso ao processar dataset base')
 
 
-def preprocess_orientacao():
-    print_with_time('Processando orientações de alta')
+def preprocess_resumo_internacao():
+    print_with_time('Processando resumos de internação médica')
     # Lendo o dataset
-    fname = 'Orientação_De_Alta.pickle'
+    fname = 'Resumo_De_Internação_Médica.pickle'
     df0 = pd.read_pickle(RAW_DATA_DIR/fname)
     
     df0.loc[ (df0['ds_label'] == 'Retorno médico em') & (df0['ds_resultado'] == 'S'), 'retorno_medico_s'] = True
     df0['retorno_medico_s'].fillna(False, inplace=True)
     
     text_column = 'ds_resultado'
-    new_text_column = 'orientacao'
+    new_text_column = 'resumo_internacao'
     df0.rename(columns={text_column: new_text_column}, inplace=True)
     df0[[new_text_column+'_contains_expression', new_text_column+'_expression']] =\
         df0.apply(lambda x: text_contains_any_expression(x[new_text_column]), axis=1, result_type="expand")
     df0.to_pickle(INTERIM_DATA_DIR/fname)
     
-    print_with_time('Sucesso ao processar orientações de alta')
+    print_with_time('Sucesso ao processar resumos de internação médica')
     
 
 def preprocess_atestado_receita(dataset_target):
@@ -59,6 +59,6 @@ def preprocess_atestado_receita(dataset_target):
     
 if __name__ == '__main__':
     preprocess_base()
-    preprocess_orientacao()
+    preprocess_resumo_internacao()
     preprocess_atestado_receita('atestado')
     preprocess_atestado_receita('receita')
