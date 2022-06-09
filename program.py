@@ -7,7 +7,7 @@ from traceback import format_exc
 from argparse import ArgumentParser
 
 
-def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, sendEmail=True, delete_file=True):
+def ExecuteProgram(test, sendEmail, delete_file, download_data=True, preprocess=True, create_file=True):
     print()
     print('*'*80)
     if test:
@@ -84,9 +84,12 @@ def ExecuteProgram(test, download_data=True, preprocess=True, create_file=True, 
 if __name__ == '__main__':
     parser = ArgumentParser(description="My parser")
     parser.add_argument('--teste', dest='test', action='store_true')
+    parser.add_argument('--no-email', dest='no_email', action='store_true')
     parser.set_defaults(test=False)
+    parser.set_defaults(no_email=False)
     args = parser.parse_args()
     test = args.test
-    ExecuteProgram(test=test, download_data=False, sendEmail=False, delete_file=False)
+    send_email = deleteFile = not args.no_email
+    ExecuteProgram(test=test, sendEmail=send_email, delete_file=deleteFile)
     # ExecuteProgram(download_data=False, preprocess=False, create_file=True,
     #                sendEmail=True, test=test, delete_file=True)
