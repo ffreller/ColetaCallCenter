@@ -17,6 +17,9 @@ select nr_atendimento,
        nr_ddi_celular,
        nr_ddd_celular,
        nr_telefone_celular,
+       nr_ddi_celular_principal,
+       nr_ddd_celular_principal,
+       nr_telefone_celular_principal,
        ds_mala_direta,
        ds_classif_setor,
        dt_agenda_consulta,
@@ -43,6 +46,9 @@ select nr_atendimento,
        base.nr_ddi_celular,
        base.nr_ddd_celular,
        base.nr_telefone_celular,
+       base.nr_ddi_celular_principal,
+       base.nr_ddd_celular_principal,
+       base.nr_telefone_celular_principal,
        base.ds_mala_direta,
        (select vd.ds_valor_dominio
           from tasy.valor_dominio vd
@@ -81,6 +87,9 @@ select nr_atendimento,
                cpf.nr_ddi_celular,
                cpf.nr_ddd_celular,
                cpf.nr_telefone_celular,
+               pf.nr_ddi_celular nr_ddi_celular_principal,
+               pf.nr_ddd_celular nr_ddd_celular_principal,
+               pf.nr_telefone_celular nr_telefone_celular_principal,
                case when cpf.ie_mala_direta = 'S' then 'Sim' when cpf.ie_mala_direta = 'N' then 'Não' else cpf.ie_mala_direta end ds_mala_direta,
                (Select distinct first_value(apu_sub.cd_setor_atendimento) over(order by apu_sub.nr_seq_interno desc)
                   from tasy.atend_paciente_unidade apu_sub
@@ -104,8 +113,7 @@ select nr_atendimento,
            and ap.ie_tipo_atendimento = 1
            and cpf.ie_tipo_complemento = 1
            and ap.cd_motivo_alta <> 7
-           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and
-               to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
+           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and  to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
            and ap.dt_cancelamento is null
            and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
            and ap.cd_pessoa_fisica = cpf.cd_pessoa_fisica(+)
@@ -136,8 +144,7 @@ select nr_atendimento,
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
            and ap.cd_motivo_alta <> 7
-           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and
-               to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
+           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and  to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
            and ap.dt_cancelamento is null
            and ac.ie_status_agenda <> 'C') con,
        (select agp.cd_pessoa_fisica cd_pessoa_fisica_exame,
@@ -213,6 +220,7 @@ select ap.nr_atendimento, mer.dt_receita, mer.dt_liberacao, mer.ds_receita
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
    and ap.cd_motivo_alta <> 7
+   and trunc(mer.dt_receita) >= trunc(ap.dt_alta)-3
    and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
    and ap.dt_cancelamento is null
    and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica

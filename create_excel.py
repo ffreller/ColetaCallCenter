@@ -26,13 +26,12 @@ def gather_info_for_worksheets():
         list(atestado.iloc[:, -1].unique()) + list(receita.iloc[:, -1].unique())
     )
     for df_, text_column in [
-            (resumo_internacao, 'resumo_internacao'),
-            (atestado, 'atestado'),
-            (receita, 'receita')
+        (resumo_internacao, 'resumo_internacao'),
+        (atestado, 'atestado'),
+        (receita, 'receita')
         ]:
 
-        df_[text_column] = df_[text_column].apply(
-            lambda x: apply_rtf_and_bold_expression(x, all_expressions))
+        df_[text_column] = df_[text_column].apply(lambda x: apply_rtf_and_bold_expression(x, all_expressions))
     
     return base, resumo_internacao, atestado, receita
 

@@ -4,7 +4,6 @@ import argparse
 
 
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser(description="My parser")
     parser.add_argument('--teste', dest='test', action='store_true')
     parser.add_argument('--no-email', dest='no_email', action='store_true')

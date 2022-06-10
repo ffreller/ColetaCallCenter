@@ -6,10 +6,12 @@ def crate_telephone_columns(df_):
         df_.loc[df_[tipo+'_completo'].str.len() < 9, tipo+'_completo'] = ''
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
         df_.drop(cols, axis=1, inplace=True)
-    columns = list(df_.columns)
-    columns.remove('nr_ramal')
-    columns.insert(-2, 'nr_ramal')
-    return df_[columns]
+    colunas = list(df_.columns)
+    assert colunas[-3] == 'telefone_completo',\
+        print('Erro ao criar colunas de telefone: ordem das colunas não é a esperada')
+    colunas.remove('nr_ramal')
+    colunas.insert(-2, 'nr_ramal')
+    return df_[colunas].copy()
 
 
 def text_contains_any_expression(text):
@@ -61,9 +63,9 @@ def generator_from_args(*args):
         yield arg
 
 def my_rtf_to_text(rtf):
-    from striprtf.striprtf import rtf_to_text
     if 'rtf' not in rtf:
         return rtf
+    from striprtf.striprtf import rtf_to_text
     return rtf_to_text(rtf, errors='ignore')
 
    

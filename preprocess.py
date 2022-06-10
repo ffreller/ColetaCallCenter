@@ -20,19 +20,19 @@ def preprocess_base():
 def preprocess_secondary_table(dataset_name):
     dataset_name = dataset_name.title()
     print_with_time(f"Processando dataset '{dataset_name}'")
-    text_col_name = "ds_"+dataset_name.lower()
     fname = dataset_name.replace(' ', '_') +'.pickle'
     df0 = pd.read_pickle(RAW_DATA_DIR/fname)
     
+    text_col_name = 'ds_resultado' if dataset_name.lower() == 'resumo de internação médica'\
+        else "ds_"+dataset_name.lower()
+    new_text_col_name = 'resumo_internacao' if dataset_name.lower() == 'resumo de internação médica'\
+        else text_col_name.split('_')[1]
+    
     if dataset_name.lower() == 'resumo de internação médica':
-        old_col_name = 'ds_resultado'
-        new_text_col_name = 'resumo_internacao'
-        df0.rename(columns={old_col_name: new_text_col_name}, inplace=True)
-
-        df0.loc[ (df0['ds_label'] == 'Retorno médico em') & (df0[new_text_col_name] == 'S'), 'retorno_medico_s'] = True
+        df0.rename(columns={text_col_name: new_text_col_name}, inplace=True)
+        df0.loc[(df0['ds_label'] == 'Retorno médico em') & (df0[new_text_col_name] == 'S'), 'retorno_medico_s'] = True
         df0['retorno_medico_s'].fillna(False, inplace=True)
     else:
-        new_text_col_name = text_col_name.split('_')[1]
         df0[new_text_col_name] = df0[text_col_name].apply(strip_html_tags)
         df0[new_text_col_name] = df0[new_text_col_name].apply(my_rtf_to_text)
         df0.drop(text_col_name, axis=1, inplace=True)
