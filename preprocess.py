@@ -36,9 +36,9 @@ def preprocess_secondary_table(dataset_name):
         df0[new_text_col_name] = df0[text_col_name].apply(strip_html_tags)
         df0[new_text_col_name] = df0[new_text_col_name].apply(my_rtf_to_text)
         df0.drop(text_col_name, axis=1, inplace=True)
-        
+    
     df0[[new_text_col_name+'_contains_expression', new_text_col_name+'_expression']] =\
-        df0.apply(lambda x: text_contains_any_expression(x[new_text_col_name]), axis=1, result_type="expand")
+        df0.apply(lambda x: text_contains_any_expression(x[new_text_col_name], dataset_name=dataset_name), axis=1, result_type="expand")
     df0.to_pickle(INTERIM_DATA_DIR/fname)
     print_with_time(f"Sucesso ao processar dataset '{dataset_name}'")
         

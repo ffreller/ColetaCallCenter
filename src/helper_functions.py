@@ -1,5 +1,5 @@
 def crate_telephone_columns(df_):
-    for tipo in ['telefone', 'celular', 'fone_adic']:
+    for tipo in ['telefone', 'celular', 'fone_adic', 'celular_principal']:
         cols = [col for col in df_.columns if col.endswith(tipo)]
         df_[tipo+'_completo'] = '+ ' + df_[cols[0]].fillna('').astype(str) + ' (' + df_[cols[1]].fillna('').astype(str) + ') ' +\
             df_[cols[2]].fillna('').astype(str).str[:-4] + '-' + df_[cols[2]].fillna('').astype(str).str[-4:]
@@ -7,23 +7,35 @@ def crate_telephone_columns(df_):
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
         df_.drop(cols, axis=1, inplace=True)
     colunas = list(df_.columns)
-    assert colunas[-3] == 'telefone_completo',\
+    pos_telefone_completo = -4
+    assert colunas[pos_telefone_completo] == 'telefone_completo',\
         print('Erro ao criar colunas de telefone: ordem das colunas não é a esperada')
     colunas.remove('nr_ramal')
-    colunas.insert(-2, 'nr_ramal')
+    colunas.insert(pos_telefone_completo+1, 'nr_ramal')
     return df_[colunas].copy()
 
 
-def text_contains_any_expression(text):
+def text_contains_any_expression(text, dataset_name):
     if type(text) != str:
         return False, 'NÃO'
     import re
-    expressions = [" solic(ito|itado|itada|it\.|\.)",  " ret(\.|orno|ornar)", " encam(\.|inho|inha)", " orient(\.|o|ad)",
-            " (tomo| ct| tc)(\.|grafia| )", " ressonância|ressonancia| rm", " (ultrasso(m|nografia)|( usg| us)(\.| ))",
-            " (endo(scopia|\.| )|eda)( |\.)", " colono(scopia|\.| )", " eco(cardiograma|\.| )",
-            " tilt test", " pet(-|\.| )(ct|sca)"]
+    dataset_name = dataset_name.lower()
+    
+    all_expressions = [" solic(ito|itado|itada|it\.|\.)",  " ret(\.|orno|ornar)", " encam(\.|inho|inha)", " orient(\.|o|ad)",
+                " (tomo| ct| tc)(\.|grafia| )", " ressonância|ressonancia| rm", " (ultrasso(m|nografia)|( usg| us)(\.| ))",
+                " (endo(scopia|\.| )|eda)( |\.)", " colono(scopia|\.| )", " eco(cardiograma|\.| )",
+                " tilt test", " pet(-|\.| )(ct|sca)"]
+    if dataset_name == 'resumo de internação médica':
+        expressions = all_expressions
+    elif dataset_name == 'receita':
+        expressions = all_expressions[-8:]
+    elif dataset_name == 'atestado':
+        expressions = ["\( *x *\) *realização de exames"]
+    else:
+        raise ValueError(f"Nome do dataset ({dataset_name}) fornecido não é válido")
+
     patterns = [re.compile(expression) for expression in expressions]
-    text = "comeo " + text + "."
+    text = "COMECO: " + text + " FIM"
     for pattern in patterns:
         match = pattern.search(text, re.IGNORECASE)
         if match:
@@ -47,7 +59,7 @@ def get_excel_fpath():
 def delete_week_file():
     from os import remove as os_remove
     fpath = get_excel_fpath()
-    os_remove(fpath)
+    return os_remove(fpath)
     
     
 def get_start_and_end_day():

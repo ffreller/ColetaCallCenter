@@ -75,7 +75,7 @@ def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
             writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
     writer.save()
     
-    print_with_time('Arquivo excel criados com sucesso')
+    print_with_time('Arquivo excel criado com sucesso')
 
 
 if __name__ == '__main__':

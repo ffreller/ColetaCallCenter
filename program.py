@@ -90,6 +90,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     test = args.test
     send_email = deleteFile = not args.no_email
-    ExecuteProgram(test=test, sendEmail=send_email, delete_file=deleteFile)
+    ExecuteProgram(test=test, sendEmail=send_email, delete_file=deleteFile, download_data=False)
     # ExecuteProgram(download_data=False, preprocess=False, create_file=True,
     #                sendEmail=True, test=test, delete_file=True)
