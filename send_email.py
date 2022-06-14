@@ -4,7 +4,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
-from src.helper_functions import print_with_time, get_excel_fpath
+from src.helper_functions import print_with_time, get_processed_excel_fpath
 from credentials import SMTP_SERVER, SMTP_PORT
 
 
@@ -35,8 +35,11 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     smtp.close()
     
     
-def send_standard_mail(email_destinations):
-    fpath = get_excel_fpath()
+def send_standard_mail(test=False):
+    email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro']
+    if test:
+        email_destinations = email_destinations[:1]
+    fpath = get_processed_excel_fpath()
     dates = str(fpath).split('processed/')[1].split('_callcenter')[0].split('_')
     dates = [date.replace('-', '/') for date in dates]
     email_subject =f"Planilha CallCenter {dates[0]} - {dates[1]}"
@@ -60,21 +63,5 @@ def send_standard_mail(email_destinations):
     print_with_time('Email enviado com sucesso!')
 
 
-def send_standard_mail_test():
-    email_destinations = ['ffreller']
-    print_with_time(f"Enviando email (teste) para: {', '.join(email_destinations)}")
-    send_standard_mail(email_destinations) 
- 
-    
-def send_standard_mail_prod():
-    email_destinations = ['ffreller',
-                          'dagsilva',
-                          'edjsouza',
-                          'elisa.habiro'
-                          ]
-    print_with_time(f"Enviando email (prod) para: {', '.join(email_destinations)}")
-    send_standard_mail(email_destinations)
-
-
 if __name__ == '__main__':
-    send_standard_mail_test()
+    send_standard_mail(test=True)

@@ -48,7 +48,7 @@ select nr_atendimento,
        base.nr_telefone_celular,
        base.nr_ddi_celular_principal,
        base.nr_ddd_celular_principal,
-       base.nr_telefone_celular_principal,
+       base.nr_telefone_celular_principal,	   
        base.ds_mala_direta,
        (select vd.ds_valor_dominio
           from tasy.valor_dominio vd
@@ -112,8 +112,8 @@ select nr_atendimento,
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
            and cpf.ie_tipo_complemento = 1
-           and ap.cd_motivo_alta <> 7
-           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and  to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
+		   and pf.dt_obito is null
+           and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00', 'dd/mm/rrrr hh24:mi:ss') and  to_date('DATE_TO_REPLACE_END 23:59:59', 'dd/mm/rrrr hh24:mi:ss')
            and ap.dt_cancelamento is null
            and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
            and ap.cd_pessoa_fisica = cpf.cd_pessoa_fisica(+)
@@ -143,8 +143,8 @@ select nr_atendimento,
            and ap.cd_pessoa_fisica = ac.cd_pessoa_fisica
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
-           and ap.cd_motivo_alta <> 7
-           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and  to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')
+           and pf.dt_obito is null
+           and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00', 'dd/mm/rrrr hh24:mi:ss') and  to_date('DATE_TO_REPLACE_END 23:59:59', 'dd/mm/rrrr hh24:mi:ss')
            and ap.dt_cancelamento is null
            and ac.ie_status_agenda <> 'C') con,
        (select agp.cd_pessoa_fisica cd_pessoa_fisica_exame,
@@ -162,24 +162,25 @@ select nr_atendimento,
                       150) ds_procedimento
           from tasy.agenda               ag,
                tasy.agenda_paciente      agp,
-               tasy.atendimento_paciente ap
+               tasy.atendimento_paciente ap,
+			   tasy.pessoa_fisica		 pf
          where 1 = 1
            and ag.cd_agenda = agp.cd_agenda
            and ag.cd_tipo_agenda = 2
            and ag.cd_estabelecimento = 1
            and agp.cd_pessoa_fisica = ap.cd_pessoa_fisica
+		   and agp.cd_pessoa_fisica = pf.cd_pessoa_fisica
            and agp.ie_status_agenda <> 'C'
            and ap.cd_estabelecimento = 1
            and ap.ie_tipo_atendimento = 1
-           and ap.cd_motivo_alta <> 7
-           and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START', 'dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END', 'dd/mm/rrrr')) exa
+           and pf.dt_obito is null
+           and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00', 'dd/mm/rrrr hh24:mi:ss') and to_date('DATE_TO_REPLACE_END 23:59:59', 'dd/mm/rrrr hh24:mi:ss')) exa
  where 1=1 
    and base.cd_setor_atendimento = sa.cd_setor_atendimento
    and (base.cd_pessoa_fisica = con.cd_pessoa_fisica(+) and base.dt_alta < con.dt_agenda_consulta(+))
    and (base.cd_pessoa_fisica = exa.cd_pessoa_fisica_exame(+) and base.dt_alta < exa.dt_agenda_exame(+)))
  where nvl(min_dt_agenda_consulta, sysdate) = nvl(dt_agenda_consulta, sysdate)
  and nvl(min_dt_agenda_exame, sysdate) = nvl(dt_agenda_exame, sysdate)
- order by 1
 
 -- Resumo de Internação Médica
 select ap.nr_atendimento,
@@ -191,25 +192,26 @@ select ap.nr_atendimento,
        tasy.ehr_reg_elemento      re,
        tasy.ehr_elemento          e,
        tasy.ehr_template_conteudo tc,
-       tasy.atendimento_paciente  ap
+       tasy.atendimento_paciente  ap,
+	   tasy.pessoa_fisica		  pf
  where r.nr_sequencia = rt.nr_seq_reg
    and rt.nr_sequencia = re.nr_seq_reg_template
    and e.nr_sequencia = re.nr_seq_elemento
    and e.nr_sequencia = tc.nr_seq_elemento
    and tc.nr_seq_template = rt.nr_seq_template
    and r.nr_atendimento = ap.nr_atendimento
+   and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
    and tc.nr_seq_template = 100531
    and re.nr_seq_elemento in (469,
                               9000524,
                               9000550)
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7
-   and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
+   and pf.dt_obito is null
+   and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00','dd/mm/rrrr hh24:mi:ss') and to_date('DATE_TO_REPLACE_END 23:59:59','dd/mm/rrrr hh24:mi:ss')
    and ap.dt_cancelamento is null
    and r.dt_liberacao is not null
    and re.dt_liberacao is not null
- order by ap.nr_atendimento, tc.ds_label
 
 -- Receita
 select ap.nr_atendimento, mer.dt_receita, mer.dt_liberacao, mer.ds_receita
@@ -219,14 +221,13 @@ select ap.nr_atendimento, mer.dt_receita, mer.dt_liberacao, mer.ds_receita
  where 1 = 1
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7
+   and pf.dt_obito is null
    and trunc(mer.dt_receita) >= trunc(ap.dt_alta)-3
-   and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
+   and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00','dd/mm/rrrr hh24:mi:ss') and to_date('DATE_TO_REPLACE_END 23:59:59','dd/mm/rrrr hh24:mi:ss')
    and ap.dt_cancelamento is null
    and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
    and ap.nr_atendimento = mer.nr_atendimento_hosp
    and mer.dt_liberacao is not null
- order by 1, 2
 
 -- Atestado
 select ap.nr_atendimento, ate.dt_atestado, ate.dt_liberacao, ate.ds_atestado
@@ -236,11 +237,9 @@ select ap.nr_atendimento, ate.dt_atestado, ate.dt_liberacao, ate.ds_atestado
  where 1 = 1
    and ap.cd_estabelecimento = 1
    and ap.ie_tipo_atendimento = 1
-   and ap.cd_motivo_alta <> 7 
-   and trunc(ap.dt_alta) between to_date('DATE_TO_REPLACE_START','dd/mm/rrrr') and to_date('DATE_TO_REPLACE_END','dd/mm/rrrr')
+   and pf.dt_obito is null
+   and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00','dd/mm/rrrr hh24:mi:ss') and to_date('DATE_TO_REPLACE_END 23:59:59','dd/mm/rrrr hh24:mi:ss')
    and ap.dt_cancelamento is null
    and ap.cd_pessoa_fisica = pf.cd_pessoa_fisica
    and ap.nr_atendimento = ate.nr_atendimento
    and ate.dt_liberacao is not null
- order by 1, 2
- 

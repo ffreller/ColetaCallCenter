@@ -6,12 +6,9 @@ def crate_telephone_columns(df_):
         df_.loc[df_[tipo+'_completo'].str.len() < 9, tipo+'_completo'] = ''
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
         df_.drop(cols, axis=1, inplace=True)
-    colunas = list(df_.columns)
-    pos_telefone_completo = -4
-    assert colunas[pos_telefone_completo] == 'telefone_completo',\
-        print('Erro ao criar colunas de telefone: ordem das colunas não é a esperada')
-    colunas.remove('nr_ramal')
-    colunas.insert(pos_telefone_completo+1, 'nr_ramal')
+    colunas = ['nr_atendimento', 'dt_nascimento', 'nm_social', 'nm_pessoa_fisica', 'dt_entrada', 'dt_alta', 'ds_motivo_alta', 'ds_email',
+               'ds_mala_direta', 'ds_classif_setor', 'dt_agenda_consulta', 'ds_status_agenda_consulta', 'ds_tipo_agenda_consulta', 'dt_agenda_exame',
+               'ds_status_agenda_exame', 'ds_procedimento', 'telefone_completo', 'celular_principal_completo', 'celular_completo', 'fone_adic_completo']
     return df_[colunas].copy()
 
 
@@ -34,10 +31,10 @@ def text_contains_any_expression(text, dataset_name):
     else:
         raise ValueError(f"Nome do dataset ({dataset_name}) fornecido não é válido")
 
-    patterns = [re.compile(expression) for expression in expressions]
+    patterns = [re.compile(expression, re.IGNORECASE) for expression in expressions]
     text = "COMECO: " + text + " FIM"
     for pattern in patterns:
-        match = pattern.search(text, re.IGNORECASE)
+        match = pattern.search(text)
         if match:
             return True, match.group(0)     
     return False, 'NÃO'
@@ -49,16 +46,25 @@ def print_with_time(txt):
     print(f"{agora.strftime('%d/%m/%Y %H:%M:%S')} - {txt}")
     
 
-def get_excel_fpath():
+def get_processed_excel_fpath():
     from src.definitions import PROCESSED_DATA_DIR
     start_day, end_day = get_start_and_end_day()
     fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}_callcenter.xlsx"
     return fpath
 
 
+def get_processed_excel_fpath_custom(start_day, end_day):
+    from src.definitions import PROCESSED_DATA_DIR
+    from datetime import datetime
+    start_day = datetime.strptime(start_day, "%d/%m/%Y")
+    end_day = datetime.strptime(end_day, "%d/%m/%Y")
+    fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}_callcenter.xlsx"
+    return fpath
+
+
 def delete_week_file():
     from os import remove as os_remove
-    fpath = get_excel_fpath()
+    fpath = get_processed_excel_fpath()
     return os_remove(fpath)
     
     
@@ -73,6 +79,7 @@ def get_start_and_end_day():
 def generator_from_args(*args):
     for arg in args:
         yield arg
+
 
 def my_rtf_to_text(rtf):
     if 'rtf' not in rtf:

@@ -95,12 +95,11 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
             else:
                 columns = ['nr_atendimento', f'dt_{query_name.lower()}', 'dt_liberacao', f'ds_{query_name.lower()}']
                 df = execute_query_cxOracle_and_load_to_df(query, conn_cxOracle, columns=columns)
-            # assert len(df) > 0, print(f'Erro ao baixar dados query {query_name.upper()}: dataframe vazio')
         except Exception as e:
             print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
             success = False
         if success:
-            print_with_time(f"Query '{query_name.title()}' baixada com sucesso")
+            print_with_time(f"Query '{query_name.title()}' executada com sucesso")
             df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     sqlalchemy_engine.dispose()
     conn_cxOracle.close()
@@ -111,3 +110,10 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
 def retrieve_last_month_data_from_dbtasy():
     last_friday, this_thursday = get_start_and_end_day()
     return retrieve_data_from_dbtasy_using_dates(last_friday, this_thursday)
+
+
+# Script para baixar dados do mês passado HAOC_TASY_PROD
+def retrieve_specific_dates_from_dbtasy(start_day, end_day):
+    start_day = datetime.strptime(start_day, "%d/%m/%Y")
+    end_day = datetime.strptime(end_day, "%d/%m/%Y")
+    return retrieve_data_from_dbtasy_using_dates(start_day, end_day)
