@@ -35,18 +35,12 @@ def text_contains_any_expression(text, dataset_name):
         if match:
             return True, match.group(0)     
     return False, 'NÃO'
-
-
-def print_with_time(txt):
-    from datetime import datetime
-    agora = datetime.now()
-    print(f"{agora.strftime('%d/%m/%Y %H:%M:%S')} - {txt}")
     
 
 def get_processed_excel_fpath():
     from src.definitions import PROCESSED_DATA_DIR
     start_day, end_day = get_start_and_end_day()
-    fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}_callcenter.xlsx"
+    fpath = PROCESSED_DATA_DIR/ f"Lista_de_Atendimentos_{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}.xlsx"
     return fpath
 
 
@@ -55,7 +49,7 @@ def get_processed_excel_fpath_custom(start_day, end_day):
     from datetime import datetime
     start_day = datetime.strptime(start_day, "%d/%m/%Y")
     end_day = datetime.strptime(end_day, "%d/%m/%Y")
-    fpath = PROCESSED_DATA_DIR/ f"{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}_callcenter.xlsx"
+    fpath = PROCESSED_DATA_DIR/ f"Lista_de_Atendimentos_{start_day.strftime('%d-%m-%Y')}_{end_day.strftime('%d-%m-%Y')}.xlsx"
     return fpath
 
 

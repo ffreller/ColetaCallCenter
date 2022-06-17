@@ -1,14 +1,18 @@
 from matplotlib.pyplot import axis
 import pandas as pd
-from src.helper_functions import my_rtf_to_text, print_with_time, crate_telephone_columns, text_contains_any_expression
+from src.helper_functions import my_rtf_to_text, crate_telephone_columns, text_contains_any_expression
 from src.HTMLStripper import strip_html_tags
-from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
+from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR, LOGGING_CONFIG
+import logging
+import logging.config
 
 
 def preprocess_base():
-    print_with_time('Processando dataset base')
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logger = logging.getLogger('standard')
+    logger.debug('Processando dataset base')
     # Lendo o dataset
-    fname = 'Baskle'
+    fname = 'Base.pickle'
     base = pd.read_pickle(RAW_DATA_DIR/fname)
     # Criar coluna com telefone completo
     base2 = crate_telephone_columns(base)
@@ -19,12 +23,16 @@ def preprocess_base():
     
     # Salvar dataset criado
     base2[colunas].to_pickle(INTERIM_DATA_DIR/fname)
-    print_with_time(f'Sucesso ao processar dataset base: {len(base2)} linhas')
+    assert base2['nr_atendimento'].is_unique, "Há números de atendimento duplicados"
+    logger.debug('Sucesso ao processar dataset base: %s linhas' % len(base2))
 
     
 def preprocess_secondary_table(dataset_name):
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logger = logging.getLogger('standard')
+    
     dataset_name = dataset_name.title()
-    print_with_time(f"Processando dataset '{dataset_name}'")
+    logger.debug("Processando dataset '%s'" % dataset_name)
     fname = dataset_name.replace(' ', '_') +'.pickle'
     df0 = pd.read_pickle(RAW_DATA_DIR/fname)
     
@@ -49,7 +57,7 @@ def preprocess_secondary_table(dataset_name):
     df0[[new_text_col_name+'_contains_expression', new_text_col_name+'_expression']] =\
         df0.apply(lambda x: text_contains_any_expression(x[new_text_col_name], dataset_name=dataset_name), axis=1, result_type="expand")
     df0.to_pickle(INTERIM_DATA_DIR/fname)
-    print_with_time(f"Sucesso ao processar dataset '{dataset_name}': {len(df0)} linhas" )
+    logger.debug("Sucesso ao processar dataset'%s': %s linhas" % (dataset_name, len(df0)))
         
     
 if __name__ == '__main__':

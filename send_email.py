@@ -1,10 +1,12 @@
+import email
 import smtplib
 from os.path import basename
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
-from src.helper_functions import print_with_time, get_processed_excel_fpath
+from src.helper_functions import get_processed_excel_fpath
+from src.definitions import LOGGING_CONFIG
 from credentials import SMTP_SERVER, SMTP_PORT
 
 
@@ -36,11 +38,14 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     
     
 def send_standard_mail(test=False):
+    import logging
+    import logging.config
+    logger = logging.getLogger('standard')
     email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
     if test:
         email_destinations = email_destinations[:1]
     fpath = get_processed_excel_fpath()
-    dates = str(fpath).split('processed/')[1].split('_callcenter')[0].split('_')
+    dates = str(fpath).split('Atendimentos_')[1].split('.xlsx')[0].split('_')
     dates = [date.replace('-', '/') for date in dates]
     email_subject =f"Planilha CallCenter {dates[0]} - {dates[1]}"
     email_destinations = [item+"@haoc.com.br" if not item.endswith("@haoc.com.br") else item for item in email_destinations]
@@ -60,7 +65,7 @@ def send_standard_mail(test=False):
               subject=email_subject, text=email_text,
               server=SMTP_SERVER, port=SMTP_PORT,
               files=[fpath])
-    print_with_time('Email enviado com sucesso!')
+    logger.debug('Email enviado com sucesso!')
 
 
 if __name__ == '__main__':

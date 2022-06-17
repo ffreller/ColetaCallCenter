@@ -6,7 +6,7 @@
 6. Rodar <pip install -r requirements.txt>
 7. Abrir crontab
 8. Adicionar linha:<
-    0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_callcenter/bin/python /bigdata/ColetaCallCenter/main.py >> /bigdata/ColetaCallCenter/log_cron.txt
+    0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_callcenter/bin/python /bigdata/ColetaCallCenter/main.py
 >
 9. Salvar
 conda create -n analise_callcenter python=3.7 -y

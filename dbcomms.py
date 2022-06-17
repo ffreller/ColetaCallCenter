@@ -1,12 +1,14 @@
 
 import pandas as pd
 from base64 import b64decode
+import logging
+import logging.config
 import re
 import cx_Oracle
 from datetime import datetime
 from sqlalchemy import create_engine
-from src.helper_functions import print_with_time, get_start_and_end_day
-from src.definitions import RAW_DATA_DIR
+from src.helper_functions import get_start_and_end_day
+from src.definitions import RAW_DATA_DIR, LOGGING_CONFIG
 from credentials import USUARIO_PROD, SENHA_PROD, USUARIO_TESTE, SENHA_TESTE
 
 
@@ -78,9 +80,13 @@ def read_queries_from_file(fpath=None):
 
 # Script para baixar dados do HAOC_TASY_PROD
 def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logger = logging.getLogger('standard')
+    error_logger = logging.getLogger('error')
+    
     start_date = start_date.strftime('%d/%m/%Y')
     end_date = end_date.strftime('%d/%m/%Y')
-    print_with_time(f"Baixando dados do DB_TASY: De {start_date} até {end_date}")
+    logger.debug(f"Baixando dados do DB_TASY: De %s até %s" % (start_date, end_date))
     queries = read_queries_from_file()
     sqlalchemy_engine = create_sqlalchemy_engine(db_tns='tasy')
     conn_cxOracle = create_conn_cxOracle(db_tns='tasy')
@@ -88,6 +94,8 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
     success = True
     for query_name in queries.keys():
         query = queries[query_name]
+        assert 'DATE_TO_REPLACE_START' in query, "Sem data início para substituir"
+        assert 'DATE_TO_REPLACE_END' in query, "Sem data fim para substituir"
         query = query.replace('DATE_TO_REPLACE_START', start_date).replace('DATE_TO_REPLACE_END', end_date)
         try:
             if query_name not in tabelas_cx_Oracle:
@@ -99,11 +107,11 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
                     columns = ['nr_atendimento', 'ds_resultado', 'ds_utc']
                 df = execute_query_cxOracle_and_load_to_df(query, conn_cxOracle, columns=columns)
         except Exception as e:
-            print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
-            print(query)
+            logger.error(f"Erro ao executar query '%s': %s " % (query_name.title(), str(e)))
+            error_logger.error(f"Erro ao executar query '%s': %s " % (query_name.title(), str(e)))
             success = False
         if success:
-            print_with_time(f"Query '{query_name.title()}' executada com sucesso: {len(df)} registros")
+            logger.debug(f"Query '%s' executada com sucesso: %s registros" % (query_name.title(), len(df)))
             df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     sqlalchemy_engine.dispose()
     conn_cxOracle.close()
