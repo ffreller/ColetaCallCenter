@@ -1,4 +1,4 @@
-def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_file=True):
+def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_file=True, only_base=True):
     from traceback import format_exc
     from create_excel import gather_info_for_worksheets, create_excel_file
     from preprocess import preprocess_base, preprocess_secondary_table
@@ -38,14 +38,20 @@ def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_
         
         if create_file:
             try:
-                df_base = gather_info_for_worksheets(only_base=True)
+                if only_base:
+                    df_base = gather_info_for_worksheets(only_base=True)
+                else:
+                    df_base, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa = gather_info_for_worksheets(only_base=False)
             except Exception:
                 logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
                 error_logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
                 return
 
             try:
-                create_excel_file(df_base, only_base=True)
+                if only_base:
+                    create_excel_file(df_base, only_base=True)
+                else:
+                    create_excel_file(df_base, False, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa)
             except Exception:
                 logger.error('Erro ao criar arquivo excel: %s' % format_exc())
                 error_logger.error('Erro ao criar arquivo excel: %s' % format_exc())
@@ -85,6 +91,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     test = args.test
     send_mail = not args.no_email
-    ExecuteProgram(send_mail=send_mail, test=test)
-    # ExecuteProgram(send_mail=send_mail, test=test,  
-    #                download_data=True, preprocess=False, create_file=False)
+    # ExecuteProgram(send_mail=send_mail, test=test)
+    ExecuteProgram(send_mail=send_mail, test=test,  
+                   download_data=False, preprocess=True, create_file=True, only_base=False)

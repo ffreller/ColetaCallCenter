@@ -14,7 +14,6 @@ def preprocess_base():
     base = read_pickle(RAW_DATA_DIR/fname)
     # Criar coluna com telefone completo
     base2 = crate_telephone_columns(base)
-    base2 = base2[base2['ds_tipo_atendimento'] == 'Internado']
     colunas = ['nr_atendimento', 'dt_nascimento', 'nm_social', 'nm_pessoa_fisica', 'dt_entrada', 'dt_alta', 'ds_motivo_alta', 'ds_email',
                 'ds_mala_direta', 'ds_classif_setor', 'dt_agenda_consulta', 'dt_agenda_exame','telefone_completo', 'celular_principal_completo',
                 'celular_completo', 'fone_adic_completo']
@@ -22,7 +21,7 @@ def preprocess_base():
     # Salvar dataset criado
     base2[colunas].to_pickle(INTERIM_DATA_DIR/fname)
     assert base2['nr_atendimento'].is_unique, "Há números de atendimento duplicados"
-    logger.debug('Sucesso ao processar dataset base: %s linhas' % len(base2))
+    logger.debug('Sucesso ao processar dataset Base: %s linhas' % len(base2))
 
     
 def preprocess_secondary_table(dataset_name):
