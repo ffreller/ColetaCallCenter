@@ -1,19 +1,16 @@
-from matplotlib.pyplot import axis
-import pandas as pd
-from src.helper_functions import my_rtf_to_text, crate_telephone_columns, text_contains_any_expression
-from src.HTMLStripper import strip_html_tags
-from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR, LOGGING_CONFIG
-import logging
-import logging.config
+
+
 
 
 def preprocess_base():
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
-    logger.debug('Processando dataset base')
+    from pandas import read_pickle
+    from src.helper_functions import crate_telephone_columns, get_logger
+    from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
+    
+    logger = get_logger('standard')
     # Lendo o dataset
     fname = 'Base.pickle'
-    base = pd.read_pickle(RAW_DATA_DIR/fname)
+    base = read_pickle(RAW_DATA_DIR/fname)
     # Criar coluna com telefone completo
     base2 = crate_telephone_columns(base)
     base2 = base2[base2['ds_tipo_atendimento'] == 'Internado']
@@ -28,13 +25,16 @@ def preprocess_base():
 
     
 def preprocess_secondary_table(dataset_name):
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
+    from pandas import read_pickle
+    from src.helper_functions import my_rtf_to_text, text_contains_any_expression, get_logger
+    from src.HTMLStripper import strip_html_tags
+    from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
+
+    logger = get_logger('standard')
     
     dataset_name = dataset_name.title()
-    logger.debug("Processando dataset '%s'" % dataset_name)
     fname = dataset_name.replace(' ', '_') +'.pickle'
-    df0 = pd.read_pickle(RAW_DATA_DIR/fname)
+    df0 = read_pickle(RAW_DATA_DIR/fname)
     
     datasets_to_process_differently = ['resumo de internação médica', 'avaliação médica pa template']
     
@@ -57,7 +57,7 @@ def preprocess_secondary_table(dataset_name):
     df0[[new_text_col_name+'_contains_expression', new_text_col_name+'_expression']] =\
         df0.apply(lambda x: text_contains_any_expression(x[new_text_col_name], dataset_name=dataset_name), axis=1, result_type="expand")
     df0.to_pickle(INTERIM_DATA_DIR/fname)
-    logger.debug("Sucesso ao processar dataset'%s': %s linhas" % (dataset_name, len(df0)))
+    logger.debug("Sucesso ao processar dataset %s: %s linhas" % (dataset_name, len(df0)))
         
     
 if __name__ == '__main__':

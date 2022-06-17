@@ -1,21 +1,14 @@
-import pandas as pd
-from src.definitions import INTERIM_DATA_DIR, LOGGING_CONFIG
-from src.helper_functions import get_processed_excel_fpath, get_processed_excel_fpath_custom,\
-    generator_from_args, apply_rtf_and_bold_expression
-import logging
-import logging.config
-
-
- 
-def gather_info_for_worksheets():
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
-    logger.debug('Agrupando informações para as planilhas')
+def gather_info_for_worksheets(only_base):
+    from pandas import read_pickle
+    from src.helper_functions import apply_rtf_and_bold_expression, get_logger
+    from src.definitions import INTERIM_DATA_DIR
+    
+    logger = get_logger('standard')
     # Lendo os datsets
-    base = pd.read_pickle(INTERIM_DATA_DIR/'Base.pickle')
-    resumo_internacao = pd.read_pickle(INTERIM_DATA_DIR/'Resumo_De_Internação_Médica.pickle')
-    atestado = pd.read_pickle(INTERIM_DATA_DIR/'Atestado.pickle')
-    receita = pd.read_pickle(INTERIM_DATA_DIR/'Receita.pickle')
+    base = read_pickle(INTERIM_DATA_DIR/'Base.pickle')
+    resumo_internacao = read_pickle(INTERIM_DATA_DIR/'Resumo_De_Internação_Médica.pickle')
+    atestado = read_pickle(INTERIM_DATA_DIR/'Atestado.pickle')
+    receita = read_pickle(INTERIM_DATA_DIR/'Receita.pickle')
     
     atends_resumo_internacao_expression = resumo_internacao[resumo_internacao['resumo_internacao_contains_expression']]['nr_atendimento'].unique().tolist()
     atends_retorno_medico_assinalado = resumo_internacao[resumo_internacao['retorno_medico_s']]['nr_atendimento'].unique().tolist()
@@ -30,6 +23,9 @@ def gather_info_for_worksheets():
     
     #Filtrando dataset
     base = base[base.iloc[:, -4:].any(axis=1)]
+    
+    if only_base:
+        return base
     
     all_expressions = set(list(resumo_internacao.iloc[:, -1].unique()) + \
         list(atestado.iloc[:, -1].unique()) + list(receita.iloc[:, -1].unique())
@@ -41,45 +37,45 @@ def gather_info_for_worksheets():
         ]:
 
         df_[text_column] = df_[text_column].apply(lambda x: apply_rtf_and_bold_expression(x, all_expressions))
+        
+    logger.debug('Sucesso ao agrupar informações para as planilhas')
     
     return base, resumo_internacao, atestado, receita
 
 
-def gather_info_for_base():
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
-    logger.debug('Agrupando informaçõe para a planilha base')
-    # Lendo os datsets
-    base = pd.read_pickle(INTERIM_DATA_DIR/'Base.pickle')
-    resumo_internacao = pd.read_pickle(INTERIM_DATA_DIR/'Resumo_De_Internação_Médica.pickle')
-    atestado = pd.read_pickle(INTERIM_DATA_DIR/'Atestado.pickle')
-    receita = pd.read_pickle(INTERIM_DATA_DIR/'Receita.pickle')
+def append_df_to_excel_workbook_sheet(writer, df, sheet_name, index_format, columns_format, col_width):
+    from src.helper_functions import get_logger
     
-    atends_resumo_internacao_expression = resumo_internacao[resumo_internacao['resumo_internacao_contains_expression']]['nr_atendimento'].unique().tolist()
-    atends_retorno_medico_assinalado = resumo_internacao[resumo_internacao['retorno_medico_s']]['nr_atendimento'].unique().tolist()
-    
-    atends_atestado_expression = atestado[atestado['atestado_contains_expression']]['nr_atendimento'].unique().tolist()
-    atends_receita_expression = receita[receita['receita_contains_expression']]['nr_atendimento'].unique().tolist()
-    
-    base['Palavras chave no Resumo de internação médica'] = base['nr_atendimento'].isin(atends_resumo_internacao_expression)
-    base['Retorno médico assinalado no Resumo de internação médica'] = base['nr_atendimento'].isin(atends_retorno_medico_assinalado)
-    base['Palavras chave no Atestado'] = base['nr_atendimento'].isin(atends_atestado_expression)
-    base['Palavras chave na Receita'] = base['nr_atendimento'].isin(atends_receita_expression)
-    
-    #Filtrando dataset
-    base = base[base.iloc[:, -4:].any(axis=1)]
-    return base
+    logger = get_logger('standard')
+    if len(df) == 0:
+        logger.warning(f"Planilha '{sheet_name}' está vazia")
+        return
+    df.to_excel(writer, sheet_name=sheet_name, index=False)
+    colunas = df.columns
+    writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
+    writer.sheets[sheet_name].autofilter(0, 0,  len(df)-1, len(colunas)-1)
+    for column_idx, column in enumerate(colunas):
+        writer.sheets[sheet_name].write(0, column_idx, column, index_format)
+    return writer
 
 
-def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
-    logger.debug('Criando arquivo excel')
+def create_excel_file(df_main, only_base, df_resumo_internacao=None, df_atestado=None, df_receita=None):
+    from pandas import ExcelWriter
+    from src.helper_functions import get_processed_excel_fpath, get_processed_excel_fpath_custom, generator_from_args, get_logger
+
+    logger = get_logger('standard')
+    
+    if not only_base:
+        assert df_resumo_internacao is not None, "Datasaet 'resumo de internação' não foi passado"
+        assert df_receita is not None, "Datasaet 'receita' não foi passado"
+        assert df_atestado is not None, "Datasaet 'atestado' não foi passado"
+        
     fpath = get_processed_excel_fpath()
     # fpath = get_processed_excel_fpath_custom('14/06/2021', '14/01/2022')
+    
     options = {'strings_to_formulas' : False, 
                'strings_to_urls' : False}
-    writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
+    writer = ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
     workbook  = writer.book
     align = 'center'
     index_format = workbook.add_format({
@@ -93,61 +89,18 @@ def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
         'align': align
     })
     col_width = 17.4
-       
+
     dfs_sheet_names = zip(
         generator_from_args(df_main, df_resumo_internacao, df_atestado, df_receita),
         generator_from_args('Base', 'Resumo de Internação Médica', 'Atestados', 'Receitas')
     )
-    
+        
     for _ in range(4):
         df_, sheet_name = next(dfs_sheet_names)
-        if len(df_) == 0:
-            logger.debug(f"AVISO: Planilha '{sheet_name}' está vazia")
-            continue
-        df_.to_excel(writer, sheet_name=sheet_name, index=False)
-        colunas = df_.columns
-        writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
-        writer.sheets[sheet_name].autofilter(0, 0,  len(df_)-1, len(colunas)-1)
-        for column_idx, column in enumerate(colunas):
-            writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
+        writer = append_df_to_excel_workbook_sheet(writer, df_, sheet_name, index_format, columns_format, col_width)
+        if sheet_name == 'Base':
+            if only_base:
+                break
+            
     writer.save()
-    
-    logger.debug('Arquivo excel criado com sucesso.')
-    
-    
-    
-def create_excel_file_only_base(df_main):
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger = logging.getLogger('standard')
-    logger.debug('Criando arquivo excel')
-    fpath = get_processed_excel_fpath()
-    options = {'strings_to_formulas' : False, 
-               'strings_to_urls' : False}
-    writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
-    workbook  = writer.book
-    align = 'center'
-    index_format = workbook.add_format({
-        'text_wrap': True,
-        'bold':True,
-        'align': align,
-        'valign': 'vcenter',
-        'border':True
-    })
-    columns_format = workbook.add_format({
-        'align': align
-    })
-    col_width = 17.4
-       
-    sheet_name = "Base"
-    if len(df_main) == 0:
-        logger.warning(f"Planilha '{sheet_name}' está vazia")
-        return
-    df_main.to_excel(writer, sheet_name=sheet_name, index=False)
-    colunas = df_main.columns
-    writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
-    writer.sheets[sheet_name].autofilter(0, 0,  len(df_main)-1, len(colunas)-1)
-    for column_idx, column in enumerate(colunas):
-        writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
-    writer.save()
-    
-    logger.debug(f"Arquivo excel 'Base' criado com sucesso: {len(df_main)} linhas.")
+    logger.debug('Arquivo excel criado com sucesso. Base tem %s linhas' % len(df_main))

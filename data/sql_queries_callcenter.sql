@@ -32,6 +32,7 @@ select nr_atendimento,
   from (select base.nr_atendimento,
                base.ds_tipo_atendimento,
        base.dt_nascimento,
+       base.cd_pessoa_fisica cd_pessoa_fisica_base,
        base.nm_social,
        base.nm_pessoa_fisica,
        base.dt_entrada,
@@ -56,9 +57,9 @@ select nr_atendimento,
           from tasy.valor_dominio vd
          where vd.cd_dominio = 1
            and vd.vl_dominio = sa.cd_classif_setor) ds_classif_setor,
-       min(con.dt_agenda_consulta) over(partition by base.cd_pessoa_fisica) min_dt_agenda_consulta,
+       min(con.dt_agenda_consulta) over(partition by base.cd_pessoa_fisica, base.nr_atendimento) min_dt_agenda_consulta,
        con.*,
-       min(exa.dt_agenda_exame) over(partition by base.cd_pessoa_fisica) min_dt_agenda_exame,
+       min(exa.dt_agenda_exame) over(partition by base.cd_pessoa_fisica, base.nr_atendimento) min_dt_agenda_exame,
        exa.*
   from (select ap.nr_atendimento,
                pf.dt_nascimento,
@@ -148,6 +149,7 @@ select nr_atendimento,
            and ap.cd_pessoa_fisica = ac.cd_pessoa_fisica
            and ap.cd_estabelecimento = 1
            and pf.dt_obito is null
+           and ac.dt_agenda > ap.dt_alta
            and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00', 'dd/mm/rrrr hh24:mi:ss') and  to_date('DATE_TO_REPLACE_END 23:59:59', 'dd/mm/rrrr hh24:mi:ss')
            and ap.dt_cancelamento is null
            and ac.ie_status_agenda <> 'C') con,
@@ -167,22 +169,24 @@ select nr_atendimento,
           from tasy.agenda               ag,
                tasy.agenda_paciente      agp,
                tasy.atendimento_paciente ap,
-			   tasy.pessoa_fisica		 pf
+               tasy.pessoa_fisica     pf
          where 1 = 1
            and ag.cd_agenda = agp.cd_agenda
            and ag.cd_tipo_agenda = 2
            and ag.cd_estabelecimento = 1
            and agp.cd_pessoa_fisica = ap.cd_pessoa_fisica
-		   and agp.cd_pessoa_fisica = pf.cd_pessoa_fisica
+           and agp.cd_pessoa_fisica = pf.cd_pessoa_fisica
            and agp.ie_status_agenda <> 'C'
            and ap.cd_estabelecimento = 1
            and pf.dt_obito is null
+           and agp.hr_inicio > ap.dt_alta
            and ap.dt_alta between to_date('DATE_TO_REPLACE_START 00:00:00', 'dd/mm/rrrr hh24:mi:ss') and to_date('DATE_TO_REPLACE_END 23:59:59', 'dd/mm/rrrr hh24:mi:ss')) exa
  where 1=1 
    and base.cd_setor_atendimento = sa.cd_setor_atendimento
    and (base.cd_pessoa_fisica = con.cd_pessoa_fisica(+) and base.dt_alta < con.dt_agenda_consulta(+))
    and (base.cd_pessoa_fisica = exa.cd_pessoa_fisica_exame(+) and base.dt_alta < exa.dt_agenda_exame(+)))
- where nvl(min_dt_agenda_consulta, sysdate) = nvl(dt_agenda_consulta, sysdate)
+ where 1=1
+ and nvl(min_dt_agenda_consulta, sysdate) = nvl(dt_agenda_consulta, sysdate)
  and nvl(min_dt_agenda_exame, sysdate) = nvl(dt_agenda_exame, sysdate)
  group by nr_atendimento,
        ds_tipo_atendimento,
@@ -295,6 +299,7 @@ select evp.nr_atendimento,
    
 -- Avaliação Médica PA Template
 select ap.nr_atendimento,
+       /* tc.ds_label, */
        re.ds_resultado,
        to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') ds_utc
   from tasy.ehr_registro          r,

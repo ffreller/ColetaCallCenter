@@ -1,16 +1,10 @@
-import email
-import smtplib
-from os.path import basename
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.utils import COMMASPACE, formatdate
-from src.helper_functions import get_processed_excel_fpath
-from src.definitions import LOGGING_CONFIG
-from credentials import SMTP_SERVER, SMTP_PORT
-
-
 def send_mail(send_from, send_to, subject, text, server, port, files=None):
+    import smtplib
+    from os.path import basename
+    from email.mime.application import MIMEApplication
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.utils import COMMASPACE, formatdate
     assert isinstance(send_to, list)
 
     msg = MIMEMultipart()
@@ -38,9 +32,11 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     
     
 def send_standard_mail(test=False):
-    import logging
-    import logging.config
-    logger = logging.getLogger('standard')
+    from src.helper_functions import get_processed_excel_fpath, get_logger
+    from credentials import SMTP_SERVER, SMTP_PORT
+
+    logger = get_logger('standard')
+    
     email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
     if test:
         email_destinations = email_destinations[:1]
