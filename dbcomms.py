@@ -68,11 +68,11 @@ def read_queries_from_file(fpath=None):
 
 # Script para baixar dados do HAOC_TASY_PROD
 def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
-    from src.helper_functions import get_logger
+    from logging import getLogger
     from src.definitions import RAW_DATA_DIR
     
-    logger = get_logger('standard')
-    error_logger = get_logger('error')
+    logger = getLogger('standard')
+    error_logger = getLogger('error')
     start_date = start_date.strftime('%d/%m/%Y')
     end_date = end_date.strftime('%d/%m/%Y')
     logger.debug(f"Baixando dados do DB_TASY: De %s até %s" % (start_date, end_date))

@@ -3,11 +3,12 @@
 
 
 def preprocess_base():
+    from logging import getLogger
     from pandas import read_pickle
-    from src.helper_functions import crate_telephone_columns, get_logger
+    from src.helper_functions import crate_telephone_columns
     from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
     
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     # Lendo o dataset
     fname = 'Base.pickle'
     base = read_pickle(RAW_DATA_DIR/fname)
@@ -26,11 +27,12 @@ def preprocess_base():
     
 def preprocess_secondary_table(dataset_name):
     from pandas import read_pickle
-    from src.helper_functions import my_rtf_to_text, text_contains_any_expression, get_logger
+    from src.helper_functions import my_rtf_to_text, text_contains_any_expression
     from src.HTMLStripper import strip_html_tags
     from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
+    from logging import getLogger
 
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     
     dataset_name = dataset_name.title()
     fname = dataset_name.replace(' ', '_') +'.pickle'

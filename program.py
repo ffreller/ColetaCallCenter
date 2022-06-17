@@ -4,10 +4,11 @@ def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_
     from preprocess import preprocess_base, preprocess_secondary_table
     from dbcomms import retrieve_last_week_data_from_dbtasy, retrieve_specific_dates_from_dbtasy
     from send_email import send_standard_mail
-    from src.helper_functions import delete_week_file, get_logger
+    from src.helper_functions import delete_week_file
+    from logging import getLogger
     
-    logger = get_logger('standard')
-    error_logger = get_logger('error')
+    logger = getLogger('standard')
+    error_logger = getLogger('error')
     print()
     print('*'*80)
     delete_file = send_mail
@@ -71,6 +72,11 @@ def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_
     
 if __name__ == '__main__':
     from argparse import ArgumentParser
+    import logging.config
+    from src.definitions import LOGGING_CONFIG
+    
+    logging.config.dictConfig(LOGGING_CONFIG)
+    
     parser = ArgumentParser(description="My parser")
     parser.add_argument('--teste', dest='test', action='store_true')
     parser.add_argument('--no-email', dest='no_email', action='store_true')
@@ -81,4 +87,4 @@ if __name__ == '__main__':
     send_mail = not args.no_email
     ExecuteProgram(send_mail=send_mail, test=test)
     # ExecuteProgram(send_mail=send_mail, test=test,  
-    #                download_data=False, preprocess=True, create_file=False)
+    #                download_data=True, preprocess=False, create_file=False)

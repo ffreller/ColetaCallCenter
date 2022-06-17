@@ -9,17 +9,6 @@ def crate_telephone_columns(df_):
     return df_.copy()
 
 
-def get_logger(logger_name):
-    assert logger_name in ['standard', 'error'], "Argumento logger_name deve ser 'standard' ou 'error'"
-    import logging
-    import logging.config
-    from src.definitions import LOGGING_CONFIG
-    
-    logging.config.dictConfig(LOGGING_CONFIG)
-    
-    return logging.getLogger(logger_name)
-
-
 def text_contains_any_expression(text, dataset_name):
     if type(text) != str:
         return False, 'NÃO'

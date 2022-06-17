@@ -32,10 +32,11 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     
     
 def send_standard_mail(test=False):
-    from src.helper_functions import get_processed_excel_fpath, get_logger
+    from logging import getLogger
+    from src.helper_functions import get_processed_excel_fpath
     from credentials import SMTP_SERVER, SMTP_PORT
 
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     
     email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
     if test:

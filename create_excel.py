@@ -1,9 +1,10 @@
 def gather_info_for_worksheets(only_base):
     from pandas import read_pickle
-    from src.helper_functions import apply_rtf_and_bold_expression, get_logger
+    from src.helper_functions import apply_rtf_and_bold_expression
     from src.definitions import INTERIM_DATA_DIR
+    from logging import getLogger
     
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     # Lendo os datsets
     base = read_pickle(INTERIM_DATA_DIR/'Base.pickle')
     resumo_internacao = read_pickle(INTERIM_DATA_DIR/'Resumo_De_Internação_Médica.pickle')
@@ -44,9 +45,9 @@ def gather_info_for_worksheets(only_base):
 
 
 def append_df_to_excel_workbook_sheet(writer, df, sheet_name, index_format, columns_format, col_width):
-    from src.helper_functions import get_logger
+    from logging import getLogger
     
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     if len(df) == 0:
         logger.warning(f"Planilha '{sheet_name}' está vazia")
         return
@@ -60,10 +61,11 @@ def append_df_to_excel_workbook_sheet(writer, df, sheet_name, index_format, colu
 
 
 def create_excel_file(df_main, only_base, df_resumo_internacao=None, df_atestado=None, df_receita=None):
+    from logging import getLogger
     from pandas import ExcelWriter
-    from src.helper_functions import get_processed_excel_fpath, get_processed_excel_fpath_custom, generator_from_args, get_logger
+    from src.helper_functions import get_processed_excel_fpath, get_processed_excel_fpath_custom, generator_from_args
 
-    logger = get_logger('standard')
+    logger = getLogger('standard')
     
     if not only_base:
         assert df_resumo_internacao is not None, "Datasaet 'resumo de internação' não foi passado"
