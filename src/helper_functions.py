@@ -6,10 +6,7 @@ def crate_telephone_columns(df_):
         df_.loc[df_[tipo+'_completo'].str.len() < 9, tipo+'_completo'] = ''
         df_[tipo+'_completo'] = df_[tipo+'_completo'].apply(lambda x: x.replace('+ 55 () -', '').replace('+  (', '('))
         df_.drop(cols, axis=1, inplace=True)
-    colunas = ['nr_atendimento', 'dt_nascimento', 'nm_social', 'nm_pessoa_fisica', 'dt_entrada', 'dt_alta', 'ds_motivo_alta', 'ds_email',
-               'ds_mala_direta', 'ds_classif_setor', 'dt_agenda_consulta', 'ds_status_agenda_consulta', 'ds_tipo_agenda_consulta', 'dt_agenda_exame',
-               'ds_status_agenda_exame', 'ds_procedimento', 'telefone_completo', 'celular_principal_completo', 'celular_completo', 'fone_adic_completo']
-    return df_[colunas].copy()
+    return df_.copy()
 
 
 def text_contains_any_expression(text, dataset_name):
@@ -22,14 +19,14 @@ def text_contains_any_expression(text, dataset_name):
                 " (tomo| ct| tc)(\.|grafia| )", " ressonância|ressonancia| rm", " (ultrasso(m|nografia)|( usg| us)(\.| ))",
                 " (endo(scopia|\.| )|eda)( |\.)", " colono(scopia|\.| )", " eco(cardiograma|\.| )",
                 " tilt test", " pet(-|\.| )(ct|sca)"]
-    if dataset_name == 'resumo de internação médica':
+    if dataset_name in ['resumo de internação médica', 'avaliação médica pa template', 'evolução médica']:
         expressions = all_expressions
     elif dataset_name == 'receita':
         expressions = all_expressions[-8:]
     elif dataset_name == 'atestado':
         expressions = ["\( *x *\) *realização de exames"]
     else:
-        raise ValueError(f"Nome do dataset ({dataset_name}) fornecido não é válido")
+        raise ValueError(f"Nome do dataset fornecido ('{dataset_name}') não é válido")
 
     patterns = [re.compile(expression, re.IGNORECASE) for expression in expressions]
     text = "COMECO: " + text + " FIM"

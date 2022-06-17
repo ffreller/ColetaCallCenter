@@ -42,8 +42,8 @@ def gather_info_for_worksheets():
 
 def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
     print_with_time('Criando arquivo excel')
-    # fpath = get_processed_excel_fpath()
-    fpath = get_processed_excel_fpath_custom('14/06/2021', '14/01/2022')
+    fpath = get_processed_excel_fpath()
+    # fpath = get_processed_excel_fpath_custom('14/06/2021', '14/01/2022')
     options = {'strings_to_formulas' : False, 
                'strings_to_urls' : False}
     writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
@@ -79,9 +79,40 @@ def create_excel_file(df_main, df_resumo_internacao, df_atestado, df_receita):
             writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
     writer.save()
     
-    print_with_time('Arquivo excel criado com sucesso')
-
-
-if __name__ == '__main__':
-    df_base, df_resumo_internacao, df_atestado, df_receita = gather_info_for_worksheets()
-    create_excel_file(df_base, df_resumo_internacao, df_atestado, df_receita)
+    print_with_time('Arquivo excel criado com sucesso.')
+    
+    
+    
+def create_excel_file_only_base(df_main):
+    print_with_time('Criando arquivo excel')
+    fpath = get_processed_excel_fpath()
+    options = {'strings_to_formulas' : False, 
+               'strings_to_urls' : False}
+    writer = pd.ExcelWriter(fpath, engine='xlsxwriter', engine_kwargs={'options':options})
+    workbook  = writer.book
+    align = 'center'
+    index_format = workbook.add_format({
+        'text_wrap': True,
+        'bold':True,
+        'align': align,
+        'valign': 'vcenter',
+        'border':True
+    })
+    columns_format = workbook.add_format({
+        'align': align
+    })
+    col_width = 17.4
+       
+    sheet_name = "Base"
+    if len(df_main) == 0:
+        print_with_time(f"AVISO: Planilha '{sheet_name}' está vazia")
+        return
+    df_main.to_excel(writer, sheet_name=sheet_name, index=False)
+    colunas = df_main.columns
+    writer.sheets[sheet_name].set_column(0, len(colunas)-1, col_width, cell_format=columns_format)
+    writer.sheets[sheet_name].autofilter(0, 0,  len(df_main)-1, len(colunas)-1)
+    for column_idx, column in enumerate(colunas):
+        writer.sheets[sheet_name].write(0, column_idx, column, index_format)                
+    writer.save()
+    
+    print_with_time(f"Arquivo excel 'Base' criado com sucesso. {len(df_main)} linhas.")

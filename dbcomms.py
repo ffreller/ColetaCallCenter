@@ -84,7 +84,7 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
     queries = read_queries_from_file()
     sqlalchemy_engine = create_sqlalchemy_engine(db_tns='tasy')
     conn_cxOracle = create_conn_cxOracle(db_tns='tasy')
-    tabelas_cx_Oracle = ['Atestado', 'Receita']
+    tabelas_cx_Oracle = ['Atestado', 'Receita', 'Avaliação Médica PA Template', 'Evolução Médica']
     success = True
     for query_name in queries.keys():
         query = queries[query_name]
@@ -93,13 +93,17 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
             if query_name not in tabelas_cx_Oracle:
                 df = execute_query_pandas(query, sqlalchemy_engine)
             else:
-                columns = ['nr_atendimento', f'dt_{query_name.lower()}', 'dt_liberacao', f'ds_{query_name.lower()}']
+                name_of_event = query_name.split(" ")[0].lower()
+                columns = ['nr_atendimento', f'dt_{name_of_event}', 'dt_liberacao', f'ds_{name_of_event}']
+                if query_name == 'Avaliação Médica PA Template':
+                    columns = ['nr_atendimento', 'ds_resultado', 'ds_utc']
                 df = execute_query_cxOracle_and_load_to_df(query, conn_cxOracle, columns=columns)
         except Exception as e:
             print_with_time(f'Erro ao excecutar query {query_name.title()}: ' + str(e))
+            print(query)
             success = False
         if success:
-            print_with_time(f"Query '{query_name.title()}' executada com sucesso")
+            print_with_time(f"Query '{query_name.title()}' executada com sucesso: {len(df)} registros")
             df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     sqlalchemy_engine.dispose()
     conn_cxOracle.close()
@@ -107,7 +111,7 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
 
 
 # Script para baixar dados do mês passado HAOC_TASY_PROD
-def retrieve_last_month_data_from_dbtasy():
+def retrieve_last_week_data_from_dbtasy():
     last_friday, this_thursday = get_start_and_end_day()
     return retrieve_data_from_dbtasy_using_dates(last_friday, this_thursday)
 

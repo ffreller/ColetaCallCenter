@@ -36,7 +36,7 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     
     
 def send_standard_mail(test=False):
-    email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro']
+    email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
     if test:
         email_destinations = email_destinations[:1]
     fpath = get_processed_excel_fpath()
@@ -47,14 +47,14 @@ def send_standard_mail(test=False):
     email_sender = "relatorios.tasy@haoc.com.br"
     email_text = f"""Caro(a) colaborador(a),
     
-                    Seguem anexas as planilhas para a semana do dia {dates[0]} até o dia {dates[1]}.
+                    Segue anexa a planilha para a semana do dia {dates[0]} até o dia {dates[1]}.
 
                     Atenciosamente,
                     Equipe Datalab.
 
                     (Obs: Essa é uma mensagem automática. Para esclarecimentos ou dúvidas, enviar email para datalab@haoc.com.br)"""
     first_break = ",\n    \n"
-    tabs = email_text[email_text.find(first_break)+len(first_break): email_text.find('Seguem')]
+    tabs = email_text[email_text.find(first_break)+len(first_break): email_text.find('Segue')]
     email_text = email_text.replace(tabs, '')
     send_mail(send_from = email_sender, send_to=email_destinations,
               subject=email_subject, text=email_text,
