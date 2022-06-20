@@ -21,7 +21,7 @@ def preprocess_base():
     # Salvar dataset criado
     base2[colunas].to_pickle(INTERIM_DATA_DIR/fname)
     assert base2['nr_atendimento'].is_unique, "Há números de atendimento duplicados"
-    logger.debug('Sucesso ao processar dataset Base: %s linhas' % len(base2))
+    logger.debug('Sucesso ao processar dataset Base: %s linhas' % len(base2.index))
 
     
 def preprocess_secondary_table(dataset_name):
@@ -41,9 +41,11 @@ def preprocess_secondary_table(dataset_name):
     
     text_col_name = 'ds_resultado' if dataset_name.lower() in datasets_to_process_differently\
         else "ds_"+dataset_name.split(' ')[0].lower()
-    new_text_col_name = 'resumo_internacao' if dataset_name.lower() == 'resumo de internação médica'\
-        else 'resumo_avaliacao' if dataset_name.lower() == 'avaliação médica pa template'\
+    new_text_col_name = 'resumo_internação' if dataset_name.lower() == 'resumo de internação médica'\
+        else 'resumo_avaliação' if dataset_name.lower() == 'avaliação médica pa template'\
         else text_col_name.split('_')[1]
+    
+    assert text_col_name in df0.columns, "Coluna '%s' não existe no dataset '%s'" % (new_text_col_name, dataset_name.title())
     
     if dataset_name.lower() in datasets_to_process_differently:
         df0.rename(columns={text_col_name: new_text_col_name}, inplace=True)
@@ -55,10 +57,12 @@ def preprocess_secondary_table(dataset_name):
         df0[new_text_col_name] = df0[new_text_col_name].apply(my_rtf_to_text)
         df0.drop(text_col_name, axis=1, inplace=True)
     
+    assert new_text_col_name in df0.columns, "Coluna '%s' não foi criada no dataset '%s'" % (new_text_col_name, dataset_name.title())
+    
     df0[[new_text_col_name+'_contains_expression', new_text_col_name+'_expression']] =\
         df0.apply(lambda x: text_contains_any_expression(x[new_text_col_name], dataset_name=dataset_name), axis=1, result_type="expand")
     df0.to_pickle(INTERIM_DATA_DIR/fname)
-    logger.debug("Sucesso ao processar dataset %s: %s linhas" % (dataset_name, len(df0)))
+    logger.debug("Sucesso ao processar dataset %s: %s linhas" % (dataset_name, len(df0.index)))
         
     
 if __name__ == '__main__':

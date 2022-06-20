@@ -102,7 +102,9 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
             error_logger.error(f"Erro ao executar query '%s': %s " % (query_name.title(), str(e)))
             success = False
         if success:
-            logger.debug(f"Sucesso ao executar query '%s': %s registros" % (query_name.title(), len(df)))
+            df_size = len(df.index)
+            assert df_size != 0, f"Erro ao executar query {query_name.title()}: dataset vazio"
+            logger.debug(f"Sucesso ao executar query '%s': %s registros" % (query_name.title(), df_size))
             df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     sqlalchemy_engine.dispose()
     conn_cxOracle.close()
@@ -118,8 +120,12 @@ def retrieve_last_week_data_from_dbtasy():
 
 
 # Script para baixar dados do mês passado HAOC_TASY_PROD
-def retrieve_specific_dates_from_dbtasy(start_day, end_day):
+def retrieve_specific_dates_from_dbtasy(start_day: str, end_day: str):
     from datetime import datetime
+    import re
+    date_pattern = re.compile('\d{2}/\d{2}/\d{4}')
+    assert date_pattern.match(start_day), 'Data de início inválida'
+    assert date_pattern.match(end_day), 'Data de fim inválida'
     start_day = datetime.strptime(start_day, "%d/%m/%Y")
     end_day = datetime.strptime(end_day, "%d/%m/%Y")
     return retrieve_data_from_dbtasy_using_dates(start_day, end_day)

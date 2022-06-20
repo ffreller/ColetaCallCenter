@@ -107,4 +107,4 @@ if __name__ == '__main__':
         send_mail = True
         download_data = True
 
-    ExecuteProgram(send_mail=send_mail, prod=prod, dowload_data=download_data, only_base=only_base)
+    ExecuteProgram(send_mail=send_mail, prod=prod, download_data=download_data, only_base=only_base)
