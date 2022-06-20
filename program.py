@@ -1,3 +1,6 @@
+from turtle import done
+
+
 def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_file=True, only_base=True):
     from traceback import format_exc
     from create_excel import gather_info_for_worksheets, create_excel_file
@@ -79,18 +82,29 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
 if __name__ == '__main__':
     from argparse import ArgumentParser
     import logging.config
-    from src.definitions import LOGGING_CONFIG
+    from src.configs import LOGGING_CONFIG
     
     logging.config.dictConfig(LOGGING_CONFIG)
     
     parser = ArgumentParser(description="My parser")
     parser.add_argument('--prod', dest='prod', action='store_true')
     parser.add_argument('--no-email', dest='no_email', action='store_true')
+    parser.add_argument('--no-download', dest='no_download', action='store_true')
+    parser.add_argument('--only-base', dest='only_base', action='store_true')
     parser.set_defaults(prod=False)
     parser.set_defaults(no_email=False)
+    parser.set_defaults(no_download=False)
+    parser.set_defaults(only_base=False)
     args = parser.parse_args()
-    prod = args.prod
+    
     send_mail = not args.no_email
-    # ExecuteProgram(send_mail=send_mail, prod=pro)
-    ExecuteProgram(send_mail=send_mail, prod=prod,  
-                   download_data=False, preprocess=True, create_file=True, only_base=False)
+    download_data = not args.no_download
+    only_base = args.only_base
+    prod = args.prod
+    
+    if prod:
+        only_base = True
+        send_mail = True
+        download_data = True
+
+    ExecuteProgram(send_mail=send_mail, prod=prod, dowload_data=download_data, only_base=only_base)

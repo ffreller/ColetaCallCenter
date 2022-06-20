@@ -1,17 +1,23 @@
-import os
-import sys
-import argparse
-
-
 if __name__ == '__main__':
+    import os
+    import sys
+    import argparse
+    
     parser = argparse.ArgumentParser(description="My parser")
     parser.add_argument('--prod', dest='prod', action='store_true')
     parser.add_argument('--no-email', dest='no_email', action='store_true')
+    parser.add_argument('--no-download', dest='no_download', action='store_true')
+    parser.add_argument('--only-base', dest='only_base', action='store_true')
     parser.set_defaults(prod=False)
     parser.set_defaults(no_email=False)
+    parser.set_defaults(no_download=False)
+    parser.set_defaults(only_base=False)
     args = parser.parse_args()
+    
     prod = args.prod
     no_email = args.no_email
+    no_download = args.no_download
+    only_base = args.only_base
     
     # Set library path for SQLAlchemy
     this_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +30,10 @@ if __name__ == '__main__':
         exec_list += ['--prod']
     if no_email:
         exec_list += ['--no-email']
+    if no_download:
+        exec_list += ['--no-download']
+    if only_base:
+        exec_list += ['--only-base']
 
     # Run Program.py with adjusted arguments
     os.execv(sys.executable, exec_list)
