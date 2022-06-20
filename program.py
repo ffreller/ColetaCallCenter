@@ -1,4 +1,4 @@
-def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_file=True, only_base=True):
+def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_file=True, only_base=True):
     from traceback import format_exc
     from create_excel import gather_info_for_worksheets, create_excel_file
     from preprocess import preprocess_base, preprocess_secondary_table
@@ -59,7 +59,7 @@ def ExecuteProgram(send_mail, test, download_data=True, preprocess=True, create_
         
         if send_mail:
             try:
-                send_standard_mail(test=test)
+                send_standard_mail(prod=prod)
             except Exception:
                 logger.error('Erro ao enviar emails: %s' % format_exc())
                 error_logger.error('Erro ao enviar emails: %s' % format_exc())
@@ -84,13 +84,13 @@ if __name__ == '__main__':
     logging.config.dictConfig(LOGGING_CONFIG)
     
     parser = ArgumentParser(description="My parser")
-    parser.add_argument('--teste', dest='test', action='store_true')
+    parser.add_argument('--prod', dest='prod', action='store_true')
     parser.add_argument('--no-email', dest='no_email', action='store_true')
-    parser.set_defaults(test=False)
+    parser.set_defaults(prod=False)
     parser.set_defaults(no_email=False)
     args = parser.parse_args()
-    test = args.test
+    prod = args.prod
     send_mail = not args.no_email
-    # ExecuteProgram(send_mail=send_mail, test=test)
-    ExecuteProgram(send_mail=send_mail, test=test,  
+    # ExecuteProgram(send_mail=send_mail, prod=pro)
+    ExecuteProgram(send_mail=send_mail, prod=prod,  
                    download_data=False, preprocess=True, create_file=True, only_base=False)

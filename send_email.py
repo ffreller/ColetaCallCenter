@@ -31,7 +31,7 @@ def send_mail(send_from, send_to, subject, text, server, port, files=None):
     smtp.close()
     
     
-def send_standard_mail(test=False):
+def send_standard_mail(prod=False):
     from logging import getLogger
     from src.helper_functions import get_processed_excel_fpath
     from credentials import SMTP_SERVER, SMTP_PORT
@@ -39,7 +39,7 @@ def send_standard_mail(test=False):
     logger = getLogger('standard')
     
     email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
-    if test:
+    if not prod:
         email_destinations = email_destinations[:1]
     fpath = get_processed_excel_fpath()
     dates = str(fpath).split('Atendimentos_')[1].split('.xlsx')[0].split('_')

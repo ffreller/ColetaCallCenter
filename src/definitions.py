@@ -1,4 +1,5 @@
 from pathlib import Path
+from credentials import SMTP_SERVER, SMTP_PORT
 
 
 MAIN_DIR = Path(__file__).resolve().parent.parent
@@ -39,6 +40,14 @@ LOGGING_CONFIG = {
             'filename': 'errors.log',
             'mode': 'a'
         },
+        'email':{
+            'class': 'logging.handlers.SMTPHandler',
+            'mailhost': SMTP_SERVER,
+            'fromaddr': "relatorios.tasy@haoc.com.br",
+            'toaddrs': ["ffreller@haoc.com.br", "dagsilva@haoc.com.br"],
+            'subject': 'Erro na execução do script de coleta do Call Center'
+        }
+
     },
     'loggers': { 
         '': {  # root logger
@@ -52,7 +61,7 @@ LOGGING_CONFIG = {
             'propagate': False
         },
         'error': { 
-            'handlers': ['file_error'],
+            'handlers': ['file_error', 'email'],
             'level': 'ERROR',
             'propagate': False
         }
