@@ -62,7 +62,7 @@ def send_standard_mail(prod=False):
               subject=email_subject, text=email_text,
               server=SMTP_SERVER, port=SMTP_PORT,
               files=[fpath])
-    logger.debug('Email enviado com sucesso!')
+    logger.debug('Email enviado com sucesso! Destinatários: %s' % ', '.join(email_destinations))
 
 
 if __name__ == '__main__':

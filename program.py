@@ -1,6 +1,3 @@
-from turtle import done
-
-
 def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_file=True, only_base=True):
     from traceback import format_exc
     from create_excel import gather_info_for_worksheets, create_excel_file
@@ -95,8 +92,8 @@ if __name__ == '__main__':
     parser.set_defaults(no_email=False)
     parser.set_defaults(no_download=False)
     parser.set_defaults(only_base=False)
-    args = parser.parse_args()
     
+    args = parser.parse_args()
     send_mail = not args.no_email
     download_data = not args.no_download
     only_base = args.only_base

@@ -39,8 +39,7 @@ def create_conn_cxOracle(db_tns):
 # Executa query via pandas e sqlalchemy
 def execute_query_pandas(query, conn):
     from pandas import read_sql
-    df = read_sql(query, conn)
-    return df
+    return read_sql(query, conn)
 
 
 # Executa query via cxOracle e carrega dados para dataframe
@@ -49,8 +48,7 @@ def execute_query_cxOracle_and_load_to_df(query, conn, columns):
     with conn.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
-    df = DataFrame(rows, columns=columns)
-    return df
+    return DataFrame(rows, columns=columns)
 
 
 # Lë queries presentes em arquivo .sql e separadas por comentários
@@ -62,8 +60,7 @@ def read_queries_from_file(fpath=None):
         sqlFile = f.read()
     query_names = findall('-- (.*)', sqlFile)
     queries = split('--.*', sqlFile)[1:]
-    dict_queries = dict(zip(query_names, queries))
-    return dict_queries
+    return dict(zip(query_names, queries))
 
 
 # Script para baixar dados do HAOC_TASY_PROD

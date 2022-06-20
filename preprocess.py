@@ -18,9 +18,11 @@ def preprocess_base():
                 'ds_mala_direta', 'ds_classif_setor', 'dt_agenda_consulta', 'dt_agenda_exame','telefone_completo', 'celular_principal_completo',
                 'celular_completo', 'fone_adic_completo']
     
+    assert base2['nr_atendimento'].is_unique, "Há números de atendimento duplicados"
+    
     # Salvar dataset criado
     base2[colunas].to_pickle(INTERIM_DATA_DIR/fname)
-    assert base2['nr_atendimento'].is_unique, "Há números de atendimento duplicados"
+
     logger.debug('Sucesso ao processar dataset Base: %s linhas' % len(base2.index))
 
     

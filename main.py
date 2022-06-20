@@ -26,6 +26,8 @@ if __name__ == '__main__':
     os.environ['LD_LIBRARY_PATH'] = instant_client_path
     os.environ['TZ'] = 'America/Sao_Paulo'
     exec_list = [sys.executable] + [this_dir+'/program.py']
+    
+    # Add arguments to program call
     if prod:
         exec_list += ['--prod']
     if no_email:
