@@ -66,4 +66,4 @@ def send_standard_mail(prod=False):
 
 
 if __name__ == '__main__':
-    send_standard_mail(test=True)
+    send_standard_mail(prod=False)

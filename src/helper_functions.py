@@ -80,21 +80,15 @@ def my_rtf_to_text(rtf):
 
    
 def apply_rtf_and_bold_expression(text, all_expressions):
-    found_expression = False
-    if type(text) != str or len(text) <= 30:
+    if not isinstance(text, str):
         return text
+    expression_found = False
     new_text = """{\\rtf1 {\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;}""" + text + "}"
     for expression in all_expressions:
-        if expression == 'NÃO':
+        if (expression == 'NÃO') or ('?' in expression) or ('suspeita' in expression):
             continue
         if expression in new_text:
-            new_text = new_text.replace(expression, f"\\b {expression} \\b0")
-            found_expression = True
-        elif expression.capitalize() in new_text:
-            new_text = new_text.replace(expression.capitalize(), f"\\b {expression.capitalize()} \\b0")
-            found_expression = True
-        
-        new_text = new_text.replace('\\b ', '\\cf2\\b ')
-        new_text = new_text.replace(' \\b0', ' \\b0\\cf')
-    return new_text if found_expression else text
+            new_text = new_text.replace(expression, f"\\cf2\\b {expression} \\b0\\cf'")
+            expression_found = True
+    return new_text if expression_found else text
     
