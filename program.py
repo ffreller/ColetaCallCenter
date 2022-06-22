@@ -7,17 +7,16 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
     from src.helper_functions import delete_week_file
     from logging import getLogger
     
+    
     logger = getLogger('standard')
     error_logger = getLogger('error')
     print()
     print('*'*80)
     delete_file = send_mail
     success = True
-    
     if download_data:
         success = retrieve_last_week_data_from_dbtasy()
         # success = retrieve_specific_dates_from_dbtasy('14/06/2021', '14/01/2022')     
-    
     if success:
         if preprocess:
             try:
@@ -79,7 +78,7 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
 if __name__ == '__main__':
     from argparse import ArgumentParser
     import logging.config
-    from src.configs import LOGGING_CONFIG
+    from configs import LOGGING_CONFIG
     
     logging.config.dictConfig(LOGGING_CONFIG)
     
