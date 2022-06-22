@@ -15,8 +15,13 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
     delete_file = send_mail
     success = True
     if download_data:
-        success = retrieve_last_week_data_from_dbtasy()
-        # success = retrieve_specific_dates_from_dbtasy('14/06/2021', '14/01/2022')     
+        try:
+            success = retrieve_last_week_data_from_dbtasy()
+            # success = retrieve_specific_dates_from_dbtasy('14/06/2021', '14/01/2022') 
+        except:
+            logger.error('Erro na comunicação com o DB: %s' % format_exc())
+            error_logger.error('Erro na comunicação com o DB: %s' % format_exc())
+            return    
     if success:
         if preprocess:
             try:

@@ -51,7 +51,7 @@ def execute_query_cxOracle_and_load_to_df(query, conn, columns):
     return DataFrame(rows, columns=columns)
 
 
-# Lë queries presentes em arquivo .sql e separadas por comentários
+# Lê queries presentes em arquivo .sql e separadas por comentários
 def read_queries_from_file(fpath=None):
     from re import findall, split
     from src.definitions import MAIN_DIR

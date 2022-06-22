@@ -21,13 +21,12 @@ if __name__ == '__main__':
     only_base = args.only_base
     
     # Set library path for SQLAlchemy
-    this_dir = os.path.dirname(os.path.realpath(__file__))
     instant_client_path = str(MAIN_DIR/'instantclient_21_5')
 
     # Oracle client path
     os.environ['LD_LIBRARY_PATH'] = instant_client_path
     os.environ['TZ'] = 'America/Sao_Paulo'
-    exec_list = [sys.executable] + [this_dir+'/program.py']
+    exec_list = [sys.executable] + [str(MAIN_DIR/'program.py')]
     
     # Add arguments to program call
     if prod:

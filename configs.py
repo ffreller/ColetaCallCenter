@@ -1,7 +1,3 @@
-
-import sys
-
-
 from src.definitions import MAIN_DIR
 from credentials import SMTP_SERVER
 
