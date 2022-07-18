@@ -1,4 +1,4 @@
-def crate_telephone_columns(df_):
+def create_telephone_columns(df_):
     for tipo in ['telefone', 'celular', 'fone_adic', 'celular_principal']:
         cols = [col for col in df_.columns if col.endswith(tipo)]
         df_[tipo+'_completo'] = '+ ' + df_[cols[0]].fillna('').astype(str) + ' (' + df_[cols[1]].fillna('').astype(str) + ') ' +\

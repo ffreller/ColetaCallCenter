@@ -9,7 +9,8 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
     
     
     logger = getLogger('standard')
-    error_logger = getLogger('error')
+    error_logger_name = 'error_prod' if prod else 'error_test'
+    error_logger = getLogger(error_logger_name)
     print()
     print('*'*80)
     delete_file = send_mail

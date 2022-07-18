@@ -5,7 +5,7 @@
 def preprocess_base():
     from logging import getLogger
     from pandas import read_pickle
-    from src.helper_functions import crate_telephone_columns
+    from src.helper_functions import create_telephone_columns
     from src.definitions import RAW_DATA_DIR, INTERIM_DATA_DIR
     
     logger = getLogger('standard')
@@ -13,7 +13,7 @@ def preprocess_base():
     fname = 'Base.pickle'
     base = read_pickle(RAW_DATA_DIR/fname)
     # Criar coluna com telefone completo
-    base2 = crate_telephone_columns(base)
+    base2 = create_telephone_columns(base)
     colunas = ['nr_atendimento', 'dt_nascimento', 'nm_social', 'nm_pessoa_fisica', 'dt_entrada', 'dt_alta', 'ds_motivo_alta', 'ds_email',
                 'ds_mala_direta', 'ds_classif_setor', 'dt_agenda_consulta', 'dt_agenda_exame','telefone_completo', 'celular_principal_completo',
                 'celular_completo', 'fone_adic_completo']

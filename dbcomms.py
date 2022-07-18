@@ -55,7 +55,7 @@ def execute_query_cxOracle_and_load_to_df(query, conn, columns):
 def read_queries_from_file(fpath=None):
     from re import findall, split
     from src.definitions import MAIN_DIR
-    if fpath is None:
+    if not fpath:
         fpath = MAIN_DIR/'data/sql_queries_callcenter.sql'
     with open(fpath, 'r') as f:
         sqlFile = f.read()
