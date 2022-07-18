@@ -16,69 +16,66 @@ def ExecuteProgram(send_mail, prod, download_data=True, preprocess=True, create_
     delete_file = send_mail
     success = True
     if download_data:
+        success, query_name = retrieve_last_week_data_from_dbtasy()
+        if not success:
+            logger.error('Erro na comunicação com o DB (tabela: %s): %s' % (query_name, format_exc()))
+            error_logger.error('Erro na comunicação com o DB (tabela: %s): %s' % (query_name, format_exc()))
+            return
+    if preprocess:
         try:
-            success = retrieve_last_week_data_from_dbtasy()
-            # success = retrieve_specific_dates_from_dbtasy('14/06/2021', '14/01/2022') 
-        except:
-            logger.error('Erro na comunicação com o DB: %s' % format_exc())
-            error_logger.error('Erro na comunicação com o DB: %s' % format_exc())
-            return    
-    if success:
-        if preprocess:
-            try:
-                preprocess_base()
-            except Exception:
-                logger.error('Erro ao processar dataset base: %s' % format_exc())
-                error_logger.error('Erro ao processar dataset base: %s' % format_exc())
-                return
-            
-            for name in ['resumo de internação médica', 'atestado', 'receita', 'evolução médica', 'avaliação médica pa template']:
-                try:
-                    preprocess_secondary_table(dataset_name=name)
-                except Exception:
-                    logger.error('Erro ao processar %s: %s' % (name, format_exc()))
-                    error_logger.error('Erro ao processar %s: %s' % (name, format_exc()))
-                    return
-            
+            preprocess_base()
+        except Exception:
+            logger.error('Erro ao processar dataset base: %s' % format_exc())
+            error_logger.error('Erro ao processar dataset base: %s' % format_exc())
+            return
         
-        if create_file:
+        for name in ['resumo de internação médica', 'atestado', 'receita', 'evolução médica', 'avaliação médica pa template']:
             try:
-                if only_base:
-                    df_base = gather_info_for_worksheets(only_base=True)
-                else:
-                    df_base, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa = gather_info_for_worksheets(only_base=False)
+                preprocess_secondary_table(dataset_name=name)
             except Exception:
-                logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
-                error_logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
-                return
-
-            try:
-                if only_base:
-                    create_excel_file(df_base, only_base=True)
-                else:
-                    create_excel_file(df_base, False, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa)
-            except Exception:
-                logger.error('Erro ao criar arquivo excel: %s' % format_exc())
-                error_logger.error('Erro ao criar arquivo excel: %s' % format_exc())
+                logger.error('Erro ao processar %s: %s' % (name, format_exc()))
+                error_logger.error('Erro ao processar %s: %s' % (name, format_exc()))
                 return
         
-        if send_mail:
-            try:
-                send_standard_mail(prod=prod)
-            except Exception:
-                logger.error('Erro ao enviar emails: %s' % format_exc())
-                error_logger.error('Erro ao enviar emails: %s' % format_exc())
-                return
+    
+    if create_file:
+        try:
+            if only_base:
+                df_base = gather_info_for_worksheets(only_base=True)
+            else:
+                df_base, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa = gather_info_for_worksheets(only_base=False)
+        except Exception:
+            logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
+            error_logger.error('Erro ao coletar informações para as planilhas: %s' % format_exc())
+            return
 
-        if delete_file:
-            try:
-                delete_week_file()
-            except Exception:
-                logger.error('Erro ao deletar arquivo da semana: %s' % format_exc())
-                error_logger.error('Erro ao deletar arquivo da semana: %s' % format_exc())
-                return
-            
-        logger.debug('FIM: Sucesso ao executar script\n')
+        try:
+            if only_base:
+                create_excel_file(df_base, only_base=True)
+            else:
+                create_excel_file(df_base, False, df_resumo_internacao, df_atestado, df_receita, df_evolucao, df_avaliacao_pa)
+        except Exception:
+            logger.error('Erro ao criar arquivo excel: %s' % format_exc())
+            error_logger.error('Erro ao criar arquivo excel: %s' % format_exc())
+            return
+    
+    if send_mail:
+        try:
+            send_standard_mail(prod=prod)
+        except Exception:
+            logger.error('Erro ao enviar emails: %s' % format_exc())
+            error_logger.error('Erro ao enviar emails: %s' % format_exc())
+            return
+
+    if delete_file:
+        try:
+            delete_week_file()
+        except Exception:
+            logger.error('Erro ao deletar arquivo da semana: %s' % format_exc())
+            error_logger.error('Erro ao deletar arquivo da semana: %s' % format_exc())
+            return
+        
+    logger.debug('FIM: Sucesso ao executar script\n')
 
     
 if __name__ == '__main__':

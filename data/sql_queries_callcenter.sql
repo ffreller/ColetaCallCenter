@@ -223,7 +223,7 @@ select nr_atendimento,
 select ap.nr_atendimento,
        tc.ds_label,
        re.ds_resultado,
-       to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') ds_utc
+       case when instr(r.ds_utc,'T') <> 0 then to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') else to_date(r.ds_utc, 'dd/mm/rrrr hh24:mi:ss') end ds_utc
   from tasy.ehr_registro          r,
        tasy.ehr_reg_template      rt,
        tasy.ehr_reg_elemento      re,
@@ -301,7 +301,7 @@ select evp.nr_atendimento,
 select ap.nr_atendimento,
        /* tc.ds_label, */
        re.ds_resultado,
-       to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') ds_utc
+	   case when instr(r.ds_utc,'T') <> 0 then to_date(r.ds_utc, 'dd/mm/rrrr"T"hh24:mi:ss') else to_date(r.ds_utc, 'dd/mm/rrrr hh24:mi:ss') end ds_utc
   from tasy.ehr_registro          r,
        tasy.ehr_reg_template      rt,
        tasy.ehr_reg_elemento      re,

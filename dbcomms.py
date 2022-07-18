@@ -70,7 +70,6 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
     from src.definitions import RAW_DATA_DIR
     
     logger = getLogger('standard')
-    error_logger = getLogger('error')
     start_date = start_date.strftime('%d/%m/%Y')
     end_date = end_date.strftime('%d/%m/%Y')
     logger.debug(f"Baixando dados do DB_TASY: De %s até %s" % (start_date, end_date))
@@ -78,14 +77,12 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
     sqlalchemy_engine = create_sqlalchemy_engine(db_tns='tasy')
     conn_cxOracle = create_conn_cxOracle(db_tns='tasy')
     tabelas_cx_Oracle = ['Atestado', 'Receita', 'Avaliação Médica PA Template', 'Evolução Médica']
-    success = True
     for query_name in queries.keys():
         query = queries[query_name]
         assert 'DATE_TO_REPLACE_START' in query, "Sem data início para substituir"
         assert 'DATE_TO_REPLACE_END' in query, "Sem data fim para substituir"
         query = query.replace('DATE_TO_REPLACE_START', start_date).replace('DATE_TO_REPLACE_END', end_date)
         try:
-            
             if query_name not in tabelas_cx_Oracle:
                 df = execute_query_pandas(query, sqlalchemy_engine)
             else:
@@ -94,20 +91,16 @@ def retrieve_data_from_dbtasy_using_dates(start_date, end_date):
                 if query_name == 'Avaliação Médica PA Template':
                     columns = ['nr_atendimento', 'ds_resultado', 'ds_utc']
                 df = execute_query_cxOracle_and_load_to_df(query, conn_cxOracle, columns=columns)
-            
-        except Exception as e:
-            logger.error(f"Erro ao executar query '%s': %s " % (query_name.title(), str(e)))
-            error_logger.error(f"Erro ao executar query '%s': %s " % (query_name.title(), str(e)))
-            success = False
-        if success:
-            df_size = len(df.index)
-            assert df_size != 0, f"Erro ao executar query {query_name.title()}: dataset vazio"
-            logger.debug(f"Sucesso ao executar query '%s': %s registros" % (query_name.title(), df_size))
-            df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
+        except Exception:
+            return False, query_name
+        df_size = len(df.index)
+        assert df_size != 0, f"Erro ao executar query {query_name.title()}: dataset vazio"
+        logger.debug(f"Sucesso ao executar query '%s': %s registros" % (query_name.title(), df_size))
+        df.to_pickle(RAW_DATA_DIR/f"{query_name.title().replace(' ', '_')}.pickle")
     sqlalchemy_engine.dispose()
     conn_cxOracle.close()
    
-    return success
+    return True, ""
 
 
 # Script para baixar dados do mês passado HAOC_TASY_PROD
