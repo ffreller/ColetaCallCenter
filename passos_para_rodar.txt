@@ -8,7 +8,7 @@ Na 1a vez:
 Quando for rodar:
 6. Rodar <python main.py --prod>
 
-crontab  0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_callcenter/bin/python /bigdata/ColetaCallCenter/main.py --prod
+crontab  00 11 * * 5 /home/ffreller/.conda/envs/analise_dados/bin/python /home/ffreller/DadosCallCenter/main.py --prod
 
 
 para alterar configurações de conexão com o bancom, alterar as linhas 14, 15 e 16 do arquivo dbcomms.py.
