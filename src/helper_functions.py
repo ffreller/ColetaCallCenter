@@ -88,7 +88,7 @@ def apply_rtf_and_bold_expression(text, all_expressions):
         if (expression == 'NÃO') or ('?' in expression) or ('suspeita' in expression):
             continue
         if expression in new_text:
-            new_text = new_text.replace(expression, f"\\cf2\\b {expression} \\b0\\cf")
+            new_text = new_text.replace(expression, f"\\cf2\\b {expression}\\b0\\cf ")
             expression_found = True
     return new_text if expression_found else text
     

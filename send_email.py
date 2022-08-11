@@ -38,7 +38,7 @@ def send_standard_mail(prod=False):
 
     logger = getLogger('standard')
     
-    email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte']
+    email_destinations = ['ffreller', 'dagsilva', 'elisa.habiro', 'lcamargo', 'priscilla.duarte', 'datalab']
     if not prod:
         email_destinations = email_destinations[:1]
     fpath = get_processed_excel_fpath()

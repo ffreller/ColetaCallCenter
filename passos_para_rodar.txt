@@ -1,19 +1,15 @@
 Na 1a vez:
-1. Rodar <git clone https://github.com/ffreller/ColetaCallCenter>
-2. Entrar no diretório criado <cd analise_callcenter>
-3. Transferir pasta instantclient_21_5 para o diretório
-4. Transferir arquivo credentials.py para o diretório
-5. Rodar <conda create -n analise_callcenter python=3.7 -y>
-6. Rodar <conda activate analise_callcenter>
-5. Rodar <pip install -r requirements.txt>
+1. Extrair arquivos para diretório
+2. Entrar no diretório criado 
+3. Rodar <conda create -n analise_callcenter python=3.8 -y>
+4. Rodar <conda activate analise_callcenter>
+5. Rodar <python -m pip install -r requirements.txt>
 
 Quando for rodar:
 6. Rodar <python main.py --prod>
 
-git clone https://github.com/ffreller/ColetaCallCenter
-cd ColetaCallCenter
-conda create -n analise_callcenter python=3.7 -y
-conda activate analise_callcenter
-pip install -r requirements.txt
-python main.py
+crontab  0 7 5 * * bigdata /bigdata/anaconda3/envs/analise_callcenter/bin/python /bigdata/ColetaCallCenter/main.py --prod
+
+
+para alterar configurações de conexão com o bancom, alterar as linhas 14, 15 e 16 do arquivo dbcomms.py.
 
